@@ -138,7 +138,7 @@ const AIRecommendations = () => {
                                             </p>
                                         )}
 
-                                        <Link to={`/destinations/${rec.id}`} className="btn btn-secondary">
+                                        <Link to={`/destination/${rec.id}`} className="btn btn-secondary">
                                             Xem chi tiết
                                         </Link>
                                     </div>

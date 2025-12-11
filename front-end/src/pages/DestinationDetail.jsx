@@ -65,7 +65,7 @@ const DestinationDetail = () => {
 
     const toggleFavorite = () => {
         if (!isAuthenticated) {
-            navigate('/login', { state: { from: { pathname: `/destinations/${id}` } } });
+            navigate('/login', { state: { from: { pathname: `/destination/${id}` } } });
             return;
         }
         if (isFavorited) {
@@ -202,11 +202,6 @@ const DestinationDetail = () => {
                         {destination.overall_rating > 0 && (
                             <div className="rating">
                                 ⭐ {destination.overall_rating.toFixed(1)}
-                                {destination.google_review_count > 0 && (
-                                    <span className="review-count">
-                                        ({destination.google_review_count.toLocaleString()} đánh giá)
-                                    </span>
-                                )}
                             </div>
                         )}
                     </div>

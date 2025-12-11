@@ -113,16 +113,4 @@ export const googleLoginAPI = async (googleToken) => {
     return response.data;
 };
 
-/**
- * Login with Facebook access token
- * @param {string} fbAccessToken - Access token from Facebook
- * @returns {Promise} Token and user info
- */
-export const facebookLoginAPI = async (fbAccessToken) => {
-    const response = await authAPI.post('/facebook', {
-        access_token: fbAccessToken
-    });
-    return response.data;
-};
-
 export default authAPI;

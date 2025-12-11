@@ -372,7 +372,7 @@ const Destinations = () => {
                                 <div className="destinations-grid">
                                     {sortedDestinations.map(dest => (
                                         <Link
-                                            to={`/destinations/${dest.id}`}
+                                            to={`/destination/${dest.id}`}
                                             key={dest.id}
                                             className="destination-card"
                                         >
