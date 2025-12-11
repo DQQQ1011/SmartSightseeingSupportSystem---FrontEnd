@@ -81,73 +81,59 @@ const Destinations = () => {
     const [selectedProvince, setSelectedProvince] = useState('');
 
     useEffect(() => {
-        if (isSearchMode && searchQuery) {
-            performSearch();
-        } else {
-            fetchDestinations();
-        }
-    }, [page, filters, selectedProvince, searchQuery, isSearchMode, sortBy]);
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
 
-    // Normal filter-based fetch
-    const fetchDestinations = async () => {
-        setLoading(true);
-        try {
-            // Build filters
-            const activeFilters = {};
+            try {
+                if (isSearchMode && searchQuery) {
+                    // Semantic search mode
+                    const activeFilters = {};
+                    Object.entries(filters).forEach(([key, values]) => {
+                        if (values.length > 0) {
+                            activeFilters[key] = values[0];
+                        }
+                    });
 
-            // All filters: send full arrays for backend $in operator
-            if (filters.budget_range.length > 0) {
-                activeFilters.budget_range = filters.budget_range;
-            }
-            // Arrays: send full arrays for backend $in operator
-            if (filters.available_time.length > 0) {
-                activeFilters.available_time = filters.available_time;
-            }
-            if (filters.companion_tag.length > 0) {
-                activeFilters.companion_tag = filters.companion_tag;
-            }
-            if (filters.season_tag.length > 0) {
-                activeFilters.season_tag = filters.season_tag;
-            }
+                    const data = await semanticSearch(searchQuery, activeFilters);
+                    console.log('Search Response:', data);
+                    setDestinations(data.data || []);
+                    setTotalPages(1);
+                    setTotalResults(data.total_found || 0);
+                } else {
+                    // Normal filter-based fetch
+                    const activeFilters = {};
 
-            // Province: single string
-            if (selectedProvince) {
-                activeFilters.location_province = selectedProvince;
-            }
+                    if (filters.budget_range.length > 0) {
+                        activeFilters.budget_range = filters.budget_range;
+                    }
+                    if (filters.available_time.length > 0) {
+                        activeFilters.available_time = filters.available_time;
+                    }
+                    if (filters.companion_tag.length > 0) {
+                        activeFilters.companion_tag = filters.companion_tag;
+                    }
+                    if (filters.season_tag.length > 0) {
+                        activeFilters.season_tag = filters.season_tag;
+                    }
+                    if (selectedProvince) {
+                        activeFilters.location_province = selectedProvince;
+                    }
 
-            const data = await getDestinations(activeFilters, page, 24, sortBy);
-            setDestinations(data.data || []);
-            setTotalPages(data.total_pages || 1);
-            setTotalResults(data.total || 0);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Semantic search with filters (no LLM)
-    const performSearch = async () => {
-        setLoading(true);
-        try {
-            const activeFilters = {};
-            Object.entries(filters).forEach(([key, values]) => {
-                if (values.length > 0) {
-                    activeFilters[key] = values[0];
+                    const data = await getDestinations(activeFilters, page, 24, sortBy);
+                    setDestinations(data.data || []);
+                    setTotalPages(data.total_pages || 1);
+                    setTotalResults(data.total || 0);
                 }
-            });
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-            const data = await semanticSearch(searchQuery, activeFilters);
-            console.log('Search Response:', data); // Debug
-            setDestinations(data.data || []);
-            setTotalPages(1); // Search returns all results
-            setTotalResults(data.total_found || 0);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchData();
+    }, [page, filters, selectedProvince, searchQuery, isSearchMode, sortBy]);
 
     const handleSearch = (e) => {
         e.preventDefault();

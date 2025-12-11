@@ -80,6 +80,7 @@ export const getDestinations = async (filters = {}, page = 1, limit = 12, sortBy
             params.append('location_province', filters.location_province);
         }
 
+
         const response = await api.get(`/destinations?${params.toString()}`);
         return response.data;
     } catch (error) {
