@@ -191,12 +191,13 @@ const VisualSearch = () => {
                                     <ShareButtons
                                         title={`Khám phá ${result.landmark_info?.name}`}
                                         text={`Tôi vừa khám phá ${result.landmark_info?.name} tại ${result.landmark_info?.location_province} với Smart Tourism AI!`}
+                                        url={`${window.location.origin}/destination/${result.landmark_id}`}
                                     />
 
                                     {/* Actions */}
                                     <div className="result-actions-modal">
                                         <Link
-                                            to={`/destinations/${result.landmark_id}`}
+                                            to={`/destination/${result.landmark_id}`}
                                             className="btn btn-primary btn-lg"
                                         >
                                             Xem chi tiết

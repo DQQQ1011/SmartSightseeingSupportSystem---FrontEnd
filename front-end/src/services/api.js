@@ -80,6 +80,7 @@ export const getDestinations = async (filters = {}, page = 1, limit = 12, sortBy
             params.append('location_province', filters.location_province);
         }
 
+
         const response = await api.get(`/destinations?${params.toString()}`);
         return response.data;
     } catch (error) {
@@ -161,7 +162,7 @@ export const visualSearch = async (imageFile, tempId = null) => {
         }
 
         // Add auth token if logged in
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
@@ -226,6 +227,25 @@ export const getDetectionHistory = async () => {
     } catch (error) {
         console.error('Get History Error:', error);
         throw error;
+    }
+};
+
+/**
+ * Get temporary detection history for guest users (During module)
+ * Uses /history/temp-summary endpoint - no auth required
+ * @param {string} tempId - Temporary ID from localStorage
+ * @returns {Promise} Detection history array
+ */
+export const getTempHistory = async (tempId) => {
+    try {
+        if (!tempId) return { history: [] };
+        const response = await axios.get(`${DURING_API_URL}/history/temp-summary`, {
+            params: { temp_id: tempId },
+        });
+        return { history: response.data };
+    } catch (error) {
+        console.error('Get Temp History Error:', error);
+        return { history: [] }; // Return empty on error for guests
     }
 };
 

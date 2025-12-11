@@ -29,7 +29,7 @@ const DestinationCard = ({ destination }) => {
     };
 
     return (
-        <Link to={`/destinations/${id}`} className="destination-card">
+        <Link to={`/destination/${id}`} className="destination-card">
             <div className="card-image-wrapper">
                 <img
                     src={imageUrl}

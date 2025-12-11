@@ -93,7 +93,7 @@ const Favorites = () => {
                                 <div className="card-content">
                                     <h3>{dest.name}</h3>
                                     <p>📍 {dest.location_province}</p>
-                                    <Link to={`/destinations/${dest.id}`} className="btn btn-secondary">
+                                    <Link to={`/destination/${dest.id}`} className="btn btn-secondary">
                                         Xem chi tiết
                                     </Link>
                                 </div>

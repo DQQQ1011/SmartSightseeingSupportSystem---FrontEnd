@@ -4,8 +4,7 @@ import {
     registerAPI,
     forgotPasswordAPI,
     resetPasswordAPI,
-    googleLoginAPI,
-    facebookLoginAPI
+    googleLoginAPI
 } from '../services/authService';
 import { syncHistory } from '../services/api';
 
@@ -155,23 +154,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Facebook Login function
-    const loginWithFacebook = async (fbAccessToken) => {
-        setError(null);
-        setLoading(true);
-
-        try {
-            const response = await facebookLoginAPI(fbAccessToken);
-            return processOAuthResponse(response);
-        } catch (err) {
-            const message = err.message || 'Đăng nhập Facebook thất bại';
-            setError(message);
-            return { success: false, error: message };
-        } finally {
-            setLoading(false);
-        }
-    };
-
     // Register function
     const register = async (username, password, email) => {
         setError(null);
@@ -245,7 +227,6 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token && !!user,
         login,
         loginWithGoogle,
-        loginWithFacebook,
         register,
         logout,
         forgotPassword,
