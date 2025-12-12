@@ -273,3 +273,78 @@
     background: var(--border);
     margin: var(--space-2) 0;
 }
+
+/* ==========================================
+   LOGIN PROMPT MODAL
+   ========================================== */
+.login-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.login-prompt-modal {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+.login-prompt-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+}
+
+.login-prompt-modal h3 {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+}
+
+.login-prompt-modal p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+    line-height: 1.6;
+}
+
+.login-prompt-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+.login-prompt-actions .btn {
+    flex: 1;
+    max-width: 140px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -122,9 +122,11 @@ export const getRecommendations = async (vibePrompt) => {
  * Perform semantic search using vector similarity (No LLM)
  * @param {string} query - Search query (vibe text)
  * @param {Object} filters - Optional hard constraint filters
+ * @param {number} page - Page number (1-indexed)
+ * @param {number} limit - Items per page
  * @returns {Promise} Search results
  */
-export const semanticSearch = async (query, filters = {}) => {
+export const semanticSearch = async (query, filters = {}, page = 1, limit = 24) => {
     try {
         // Build hard_constraints object from filters
         const hard_constraints = {};
@@ -132,8 +134,10 @@ export const semanticSearch = async (query, filters = {}) => {
         if (filters.available_time) hard_constraints.available_time = filters.available_time;
         if (filters.companion_tag) hard_constraints.companion_tag = filters.companion_tag;
         if (filters.season_tag) hard_constraints.season_tag = filters.season_tag;
+        if (filters.location_province) hard_constraints.location_province = filters.location_province;
 
-        const response = await api.post('/search', {
+        // Include page and limit as query params
+        const response = await api.post(`/search?page=${page}&limit=${limit}`, {
             query: query,
             hard_constraints: Object.keys(hard_constraints).length > 0 ? hard_constraints : null
         });

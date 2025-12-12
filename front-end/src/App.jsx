@@ -15,6 +15,7 @@ import Favorites from './pages/Favorites';
 // Pages - During Module
 import VisualSearch from './pages/VisualSearch';
 import DetectionHistory from './pages/DetectionHistory';
+import CheckInHistory from './pages/CheckInHistory';
 
 // Pages - After Module
 import AlbumCreator from './pages/AlbumCreator';
@@ -70,6 +71,11 @@ function App() {
                 <Route path="/detection-history" element={
                   <ProtectedRoute>
                     <DetectionHistory />
+                  </ProtectedRoute>
+                } />
+                <Route path="/checkin-history" element={
+                  <ProtectedRoute>
+                    <CheckInHistory />
                   </ProtectedRoute>
                 } />
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getDestinations, semanticSearch } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './Destinations.css';
@@ -58,82 +58,93 @@ const SORT_OPTIONS = [
 ];
 
 const Destinations = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Initialize state from URL params (for back navigation persistence)
     const [destinations, setDestinations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(() => parseInt(searchParams.get('page')) || 1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalResults, setTotalResults] = useState(0);
-    const [sortBy, setSortBy] = useState('Đánh giá cao nhất');
+    const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'Đánh giá cao nhất');
 
-    // Search query (vibe)
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchInput, setSearchInput] = useState('');
-    const [isSearchMode, setIsSearchMode] = useState(false);
+    // Search query (vibe) - restore from URL
+    const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+    const [searchInput, setSearchInput] = useState(() => searchParams.get('q') || '');
+    const [isSearchMode, setIsSearchMode] = useState(() => !!searchParams.get('q'));
 
-    // Multi-select filters (arrays) + province dropdown
-    const [filters, setFilters] = useState({
-        budget_range: [],
-        available_time: [],
-        companion_tag: [],
-        season_tag: []
-    });
-    const [selectedProvince, setSelectedProvince] = useState('');
+    // Multi-select filters (arrays) + province dropdown - restore from URL
+    const [filters, setFilters] = useState(() => ({
+        budget_range: searchParams.getAll('budget_range') || [],
+        available_time: searchParams.getAll('available_time') || [],
+        companion_tag: searchParams.getAll('companion_tag') || [],
+        season_tag: searchParams.getAll('season_tag') || []
+    }));
+    const [selectedProvince, setSelectedProvince] = useState(() => searchParams.get('province') || '');
+
+    // Sync state to URL params (for persistence when navigating away)
+    useEffect(() => {
+        const params = new URLSearchParams();
+
+        if (page > 1) params.set('page', page.toString());
+        if (sortBy !== 'Đánh giá cao nhất') params.set('sort', sortBy);
+        if (searchQuery) params.set('q', searchQuery);
+        if (selectedProvince) params.set('province', selectedProvince);
+
+        // Append array filters
+        filters.budget_range.forEach(v => params.append('budget_range', v));
+        filters.available_time.forEach(v => params.append('available_time', v));
+        filters.companion_tag.forEach(v => params.append('companion_tag', v));
+        filters.season_tag.forEach(v => params.append('season_tag', v));
+
+        setSearchParams(params, { replace: true });
+    }, [page, sortBy, searchQuery, selectedProvince, filters, setSearchParams]);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            setError(null);
-
             try {
-                if (isSearchMode && searchQuery) {
-                    // Semantic search mode
-                    const activeFilters = {};
-                    Object.entries(filters).forEach(([key, values]) => {
-                        if (values.length > 0) {
-                            activeFilters[key] = values[0];
-                        }
-                    });
+                // Chuẩn bị filter object (bỏ các mảng rỗng)
+                const activeFilters = {};
+                if (filters.budget_range.length > 0) activeFilters.budget_range = filters.budget_range;
+                if (filters.available_time.length > 0) activeFilters.available_time = filters.available_time;
+                if (filters.companion_tag.length > 0) activeFilters.companion_tag = filters.companion_tag;
+                if (filters.season_tag.length > 0) activeFilters.season_tag = filters.season_tag;
+                if (selectedProvince) activeFilters.location_province = selectedProvince;
 
-                    const data = await semanticSearch(searchQuery, activeFilters);
-                    console.log('Search Response:', data);
-                    setDestinations(data.data || []);
-                    setTotalPages(1);
-                    setTotalResults(data.total_found || 0);
+                let data;
+
+                // --- LOGIC ĐIỀU PHỐI QUAN TRỌNG ---
+                if (searchQuery && searchQuery.trim() !== "") {
+                    // TRƯỜNG HỢP 1: CÓ TỪ KHÓA TÌM KIẾM -> Gọi API Search
+                    data = await semanticSearch(searchQuery, activeFilters, page, 24);
                 } else {
-                    // Normal filter-based fetch
-                    const activeFilters = {};
-
-                    if (filters.budget_range.length > 0) {
-                        activeFilters.budget_range = filters.budget_range;
-                    }
-                    if (filters.available_time.length > 0) {
-                        activeFilters.available_time = filters.available_time;
-                    }
-                    if (filters.companion_tag.length > 0) {
-                        activeFilters.companion_tag = filters.companion_tag;
-                    }
-                    if (filters.season_tag.length > 0) {
-                        activeFilters.season_tag = filters.season_tag;
-                    }
-                    if (selectedProvince) {
-                        activeFilters.location_province = selectedProvince;
-                    }
-
-                    const data = await getDestinations(activeFilters, page, 24, sortBy);
-                    setDestinations(data.data || []);
-                    setTotalPages(data.total_pages || 1);
-                    setTotalResults(data.total || 0);
+                    // TRƯỜNG HỢP 2: KHÔNG CÓ TỪ KHÓA -> Gọi API List Filter thường
+                    data = await getDestinations(activeFilters, page, 24, sortBy);
                 }
-            } catch (err) {
-                setError(err.message);
+
+                // Cập nhật State
+                setDestinations(data.data || []);
+                setTotalResults(data.total_found || data.total || 0);
+                setTotalPages(data.total_pages || 1);
+
+            } catch (error) {
+                console.error("Lỗi tải dữ liệu:", error);
+                setError(error.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, [page, filters, selectedProvince, searchQuery, isSearchMode, sortBy]);
+        // Debounce để tránh gọi API liên tục khi gõ
+        const timer = setTimeout(() => {
+            fetchData();
+        }, 300);
+
+        return () => clearTimeout(timer);
+
+    }, [page, filters, selectedProvince, searchQuery, sortBy]);
 
     const handleSearch = (e) => {
         e.preventDefault();
