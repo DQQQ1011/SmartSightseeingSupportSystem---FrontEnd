@@ -118,7 +118,7 @@ const Destinations = () => {
                 // --- LOGIC ĐIỀU PHỐI QUAN TRỌNG ---
                 if (searchQuery && searchQuery.trim() !== "") {
                     // TRƯỜNG HỢP 1: CÓ TỪ KHÓA TÌM KIẾM -> Gọi API Search
-                    data = await semanticSearch(searchQuery, activeFilters, page, 24);
+                    data = await semanticSearch(searchQuery, activeFilters, page, 24, sortBy);
                 } else {
                     // TRƯỜNG HỢP 2: KHÔNG CÓ TỪ KHÓA -> Gọi API List Filter thường
                     data = await getDestinations(activeFilters, page, 24, sortBy);

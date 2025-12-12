@@ -124,9 +124,10 @@ export const getRecommendations = async (vibePrompt) => {
  * @param {Object} filters - Optional hard constraint filters
  * @param {number} page - Page number (1-indexed)
  * @param {number} limit - Items per page
+ * @param {string} sortBy - Sort option (matches backend SortOption enum)
  * @returns {Promise} Search results
  */
-export const semanticSearch = async (query, filters = {}, page = 1, limit = 24) => {
+export const semanticSearch = async (query, filters = {}, page = 1, limit = 24, sortBy = 'Đánh giá cao nhất') => {
     try {
         // Build hard_constraints object from filters
         const hard_constraints = {};
@@ -136,8 +137,8 @@ export const semanticSearch = async (query, filters = {}, page = 1, limit = 24) 
         if (filters.season_tag) hard_constraints.season_tag = filters.season_tag;
         if (filters.location_province) hard_constraints.location_province = filters.location_province;
 
-        // Include page and limit as query params
-        const response = await api.post(`/search?page=${page}&limit=${limit}`, {
+        // Include page, limit, and sort_by as query params
+        const response = await api.post(`/search?page=${page}&limit=${limit}&sort_by=${encodeURIComponent(sortBy)}`, {
             query: query,
             hard_constraints: Object.keys(hard_constraints).length > 0 ? hard_constraints : null
         });
