@@ -137,9 +137,6 @@ const Navbar = () => {
                                         <Link to="/detection-history" className="dropdown-item" onClick={() => setShowDropdown(false)}>
                                             📸 Lịch sử nhận diện
                                         </Link>
-                                        <Link to="/checkin-history" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            📍 Lịch sử Check-in
-                                        </Link>
                                         <div className="dropdown-divider"></div>
                                         <button className="dropdown-item logout" onClick={handleLogout}>
                                             🚪 Đăng xuất
@@ -188,7 +185,6 @@ const Navbar = () => {
                                 <Link to="/my-albums" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>🖼️ Album của tôi</Link>
                                 <Link to="/trip-summary" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>🗺️ Tổng kết chuyến đi</Link>
                                 <Link to="/detection-history" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>📸 Lịch sử nhận diện</Link>
-                                <Link to="/checkin-history" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>📍 Lịch sử Check-in</Link>
                                 <div className="mobile-divider"></div>
                                 <button className="mobile-link logout" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>🚪 Đăng xuất</button>
                             </>
