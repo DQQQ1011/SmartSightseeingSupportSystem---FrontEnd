@@ -406,8 +406,8 @@ const Destinations = () => {
                                 </div>
                             )}
 
-                            {/* Pagination - only show when not in search mode */}
-                            {!isSearchMode && totalPages > 1 && (
+                            {/* Pagination */}
+                            {totalPages > 1 && (
                                 <div className="pagination">
                                     <div className="pagination-buttons">
                                         <button
