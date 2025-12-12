@@ -65,6 +65,24 @@ const VisualSearch = () => {
             }
 
             setResult(data);
+
+            // Save successful result to localStorage for check-in history
+            if (data.status === 'success' && data.landmark_id) {
+                const historyItem = {
+                    id: data.landmark_id,
+                    landmark_id: data.landmark_id,
+                    name: data.landmark_info?.name,
+                    location_province: data.landmark_info?.location_province,
+                    image_url: data.landmark_info?.image_urls?.[0],
+                    similarity_score: data.similarity_score,
+                    created_at: new Date().toISOString()
+                };
+
+                const existingHistory = JSON.parse(localStorage.getItem('checkin_history') || '[]');
+                // Add to beginning, limit to 50 items
+                const updatedHistory = [historyItem, ...existingHistory].slice(0, 50);
+                localStorage.setItem('checkin_history', JSON.stringify(updatedHistory));
+            }
         } catch (err) {
             setError(err.message || 'Không thể nhận diện địa điểm');
         } finally {
