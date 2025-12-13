@@ -5,13 +5,14 @@ export const config = {
     runtime: 'edge',
 };
 
-const BEFORE_API_URL = process.env.VITE_BEFORE_API_URL || 'https://smart-tourism-before.onrender.com';
-const SITE_URL = process.env.VITE_SITE_URL || 'https://smart-tourism.vercel.app';
-
 export default async function handler(request) {
     const url = new URL(request.url);
     const pathParts = url.pathname.split('/');
     const id = pathParts[pathParts.length - 1];
+
+    // Get the origin from request URL (works in production)
+    const origin = url.origin;
+    const pageUrl = `${origin}/destination/${id}`;
 
     // Get optional params: user image and timestamp
     const userImageUrl = url.searchParams.get('img');
@@ -21,17 +22,21 @@ export default async function handler(request) {
     const userAgent = request.headers.get('user-agent') || '';
     const isCrawler = /facebookexternalhit|Facebot|Twitterbot|WhatsApp|TelegramBot|Slackbot|LinkedInBot|Pinterest|Zalo/i.test(userAgent);
 
-    // If not a crawler, redirect to actual page
+    // If not a crawler, redirect to actual page immediately
     if (!isCrawler) {
-        return Response.redirect(`${SITE_URL}/destination/${id}`, 302);
+        return Response.redirect(pageUrl, 302);
     }
 
     try {
+        // Backend API URL - use env var or default to user's HF space
+        const BEFORE_API_URL = process.env.BEFORE_API_URL || 'https://novaaa1011-before.hf.space';
+
         // Fetch destination data from API
         const response = await fetch(`${BEFORE_API_URL}/destinations/${id}`);
 
         if (!response.ok) {
-            return new Response('Not Found', { status: 404 });
+            // If API fails, redirect to page anyway
+            return Response.redirect(pageUrl, 302);
         }
 
         const destination = await response.json();
@@ -46,8 +51,7 @@ export default async function handler(request) {
         const description = `Tôi đã khám phá ${destination.name} với Smart Sightseeing lúc ${displayTime} tại ${destination.location_province || 'Việt Nam'}! 🌟`;
 
         // Use user's uploaded image if provided, otherwise use database image
-        const image = userImageUrl || destination.image_urls?.[0] || `${SITE_URL}/og-default.jpg`;
-        const pageUrl = `${SITE_URL}/destination/${id}`;
+        const image = userImageUrl || destination.image_urls?.[0] || `${origin}/og-default.jpg`;
 
         // Return HTML with Open Graph meta tags
         const html = `<!DOCTYPE html>
@@ -96,6 +100,8 @@ export default async function handler(request) {
 
     } catch (error) {
         console.error('OG handler error:', error);
-        return new Response('Server Error', { status: 500 });
+        // On error, just redirect to the page
+        return Response.redirect(pageUrl, 302);
     }
 }
+
