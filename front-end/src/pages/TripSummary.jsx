@@ -587,35 +587,34 @@ const TripSummary = () => {
                     </div>
                 </div>
             )}
-        </div>
-    )
-}
 
-{
-    tab === 'history' && (
-        <div className="history-section">
-            {summaries.length === 0 ? (
-                <div className="empty-state">
-                    <p>Chưa có lịch sử tổng kết nào.</p>
-                </div>
-            ) : (
-                <div className="summaries-list">
-                    {summaries.map((summary, index) => (
-                        <div key={index} className="summary-card" onClick={() => {
-                            setCurrentSummary(summary);
-                            setStep(3);
-                            setTab('create');
-                        }}>
-                            <h4>{summary.trip_title}</h4>
-                            <div className="summary-meta">
-                                <span>{summary.total_locations} địa điểm</span>
-                                <span>•</span>
-                                <span>{summary.total_distance_km?.toFixed(1)} km</span>
-                                <span>•</span>
-                                <span>{summary.start_date} → {summary.end_date}</span>
-                            </div>
+            {/* History Tab */}
+            {tab === 'history' && (
+                <div className="history-section">
+                    {summaries.length === 0 ? (
+                        <div className="empty-state">
+                            <p>Chưa có lịch sử tổng kết nào.</p>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="summaries-list">
+                            {summaries.map((summary, index) => (
+                                <div key={index} className="summary-card" onClick={() => {
+                                    setCurrentSummary(summary);
+                                    setStep(3);
+                                    setTab('create');
+                                }}>
+                                    <h4>{summary.trip_title}</h4>
+                                    <div className="summary-meta">
+                                        <span>{summary.total_locations} địa điểm</span>
+                                        <span>•</span>
+                                        <span>{summary.total_distance_km?.toFixed(1)} km</span>
+                                        <span>•</span>
+                                        <span>{summary.start_date} → {summary.end_date}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -623,3 +622,4 @@ const TripSummary = () => {
 };
 
 export default TripSummary;
+
