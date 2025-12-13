@@ -1,15 +1,28 @@
 import { useState } from 'react';
 import './ShareButtons.css';
 
-const ShareButtons = ({ title, text, url, imageUrl, compact = false }) => {
+const ShareButtons = ({ title, text, url, ogUrl, userImageUrl, timestamp, compact = false }) => {
     const [copied, setCopied] = useState(false);
     const shareUrl = url || window.location.href;
+
+    // Build OG URL with optional user image and timestamp params
+    let ogShareUrl = ogUrl || shareUrl;
+    if (ogUrl) {
+        const params = new URLSearchParams();
+        if (userImageUrl) params.set('img', userImageUrl);
+        if (timestamp) params.set('t', new Date(timestamp).getTime().toString());
+        const paramString = params.toString();
+        if (paramString) {
+            ogShareUrl = `${ogUrl}?${paramString}`;
+        }
+    }
+
     const shareText = text || title || 'Check this out!';
     const fullShareText = `${shareText}\n\n🔗 ${shareUrl}`;
 
-    // Facebook Share (note: Facebook ignores quote param, uses OG tags)
+    // Facebook Share - uses OG URL for proper meta tags
     const shareFacebook = () => {
-        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogShareUrl)}`;
         window.open(fbUrl, '_blank', 'width=600,height=400');
     };
 
@@ -25,9 +38,9 @@ const ShareButtons = ({ title, text, url, imageUrl, compact = false }) => {
         window.open(tgUrl, '_blank');
     };
 
-    // Zalo - Share via Zalo (link only, text from OG tags)
+    // Zalo - Share via Zalo - uses OG URL for proper meta tags
     const shareZalo = () => {
-        const zaloUrl = `https://zalo.me/share?url=${encodeURIComponent(shareUrl)}`;
+        const zaloUrl = `https://zalo.me/share?url=${encodeURIComponent(ogShareUrl)}`;
         window.open(zaloUrl, '_blank', 'width=600,height=400');
     };
 

@@ -98,6 +98,9 @@ const DetectionHistory = () => {
                                     title={`Khám phá ${item.name}`}
                                     text={`Tôi đã khám phá ${item.name} với Smart Sightseeing lúc ${new Date(item.timestamp).toLocaleString('vi-VN')} tại ${item.location_province || 'Việt Nam'}!`}
                                     url={`${window.location.origin}/destination/${item.landmark_id}`}
+                                    ogUrl={`${window.location.origin}/api/og/${item.landmark_id}`}
+                                    userImageUrl={item.user_image_url}
+                                    timestamp={item.timestamp}
                                     compact={true}
                                 />
                                 <Link
