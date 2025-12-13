@@ -210,6 +210,7 @@ const VisualSearch = () => {
                                         title={`Khám phá ${result.landmark_info?.name}`}
                                         text={`Tôi vừa khám phá ${result.landmark_info?.name} với Smart Sightseeing lúc ${new Date().toLocaleString('vi-VN')} tại ${result.landmark_info?.location_province}!`}
                                         url={`${window.location.origin}/destination/${result.landmark_id}`}
+                                        compact={true}
                                     />
 
                                     {/* Actions */}
