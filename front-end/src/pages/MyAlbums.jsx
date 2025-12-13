@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getMyAlbums } from '../services/afterService';
+import { getMyAlbums, createShareLink, revokeShareLink, deleteAlbum, renameAlbum } from '../services/afterService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import ShareButtons from '../components/ShareButtons';
 import './MyAlbums.css';
 
 const MyAlbums = () => {
@@ -12,6 +11,10 @@ const MyAlbums = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedAlbum, setSelectedAlbum] = useState(null);
+    const [shareLinks, setShareLinks] = useState({});
+    const [editingTitle, setEditingTitle] = useState(null);
+    const [newTitle, setNewTitle] = useState('');
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -28,6 +31,79 @@ const MyAlbums = () => {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Handle Share Link Creation
+    const handleShare = async (albumId) => {
+        try {
+            setActionLoading(true);
+            const result = await createShareLink(albumId);
+            const shareUrl = `${window.location.origin}/shared/${result.share_token}`;
+            setShareLinks(prev => ({ ...prev, [albumId]: shareUrl }));
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareUrl);
+            alert('✅ Đã tạo link chia sẻ và copy vào clipboard!');
+        } catch (err) {
+            alert('❌ Không thể tạo link: ' + err.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle Stop Sharing
+    const handleStopSharing = async (albumId) => {
+        if (!confirm('Bạn có chắc muốn tắt chia sẻ? Link cũ sẽ không còn hoạt động.')) return;
+        try {
+            setActionLoading(true);
+            await revokeShareLink(albumId);
+            setShareLinks(prev => {
+                const updated = { ...prev };
+                delete updated[albumId];
+                return updated;
+            });
+            alert('✅ Đã tắt chia sẻ album');
+        } catch (err) {
+            alert('❌ Lỗi: ' + err.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle Delete Album
+    const handleDelete = async (albumId) => {
+        if (!confirm('⚠️ Xóa album vĩnh viễn? Hành động này không thể hoàn tác!')) return;
+        try {
+            setActionLoading(true);
+            await deleteAlbum(albumId);
+            setAlbums(prev => prev.filter(a => a.id !== albumId));
+            setSelectedAlbum(null);
+            alert('✅ Đã xóa album');
+        } catch (err) {
+            alert('❌ Lỗi: ' + err.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle Rename Album
+    const handleRename = async (albumId) => {
+        if (!newTitle.trim()) return;
+        try {
+            setActionLoading(true);
+            await renameAlbum(albumId, newTitle);
+            setAlbums(prev => prev.map(a =>
+                a.id === albumId ? { ...a, title: newTitle } : a
+            ));
+            if (selectedAlbum?.id === albumId) {
+                setSelectedAlbum(prev => ({ ...prev, title: newTitle }));
+            }
+            setEditingTitle(null);
+            setNewTitle('');
+        } catch (err) {
+            alert('❌ Lỗi: ' + err.message);
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -108,12 +184,44 @@ const MyAlbums = () => {
                 <div className="modal-overlay" onClick={() => setSelectedAlbum(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <button className="close-btn" onClick={() => setSelectedAlbum(null)}>×</button>
-                        <h2>{selectedAlbum.title}</h2>
+
+                        {/* Title with Edit */}
+                        {editingTitle === selectedAlbum.id ? (
+                            <div className="edit-title">
+                                <input
+                                    type="text"
+                                    value={newTitle}
+                                    onChange={(e) => setNewTitle(e.target.value)}
+                                    placeholder="Tên album mới"
+                                    autoFocus
+                                />
+                                <button onClick={() => handleRename(selectedAlbum.id)} disabled={actionLoading}>
+                                    ✓
+                                </button>
+                                <button onClick={() => setEditingTitle(null)}>✕</button>
+                            </div>
+                        ) : (
+                            <div className="title-row">
+                                <h2>{selectedAlbum.title}</h2>
+                                <button
+                                    className="icon-btn"
+                                    onClick={() => {
+                                        setEditingTitle(selectedAlbum.id);
+                                        setNewTitle(selectedAlbum.title);
+                                    }}
+                                    title="Đổi tên"
+                                >
+                                    ✏️
+                                </button>
+                            </div>
+                        )}
+
                         <p className="modal-meta">
                             {selectedAlbum.photos?.length || 0} ảnh •
                             {' '}{new Date(selectedAlbum.created_at).toLocaleDateString('vi-VN')}
                         </p>
 
+                        {/* Photos Grid */}
                         <div className="photos-grid">
                             {selectedAlbum.photos?.map((photo, index) => (
                                 <div key={index} className="photo-item">
@@ -122,22 +230,58 @@ const MyAlbums = () => {
                             ))}
                         </div>
 
-                        {selectedAlbum.download_zip_url && (
-                            <a
-                                href={selectedAlbum.download_zip_url}
-                                className="download-btn"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                📥 Tải về tất cả (ZIP)
-                            </a>
-                        )}
+                        {/* Actions */}
+                        <div className="album-actions">
+                            {selectedAlbum.download_zip_url && (
+                                <a
+                                    href={selectedAlbum.download_zip_url}
+                                    className="action-btn download"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    📥 Tải về ZIP
+                                </a>
+                            )}
 
-                        {/* Share Album */}
-                        <ShareButtons
-                            title={`Album: ${selectedAlbum.title}`}
-                            text={`Xem album ${selectedAlbum.title} với ${selectedAlbum.photos?.length || 0} ảnh đẹp!`}
-                        />
+                            {/* Share Button */}
+                            {shareLinks[selectedAlbum.id] ? (
+                                <div className="share-section">
+                                    <input
+                                        type="text"
+                                        value={shareLinks[selectedAlbum.id]}
+                                        readOnly
+                                        onClick={(e) => {
+                                            e.target.select();
+                                            navigator.clipboard.writeText(e.target.value);
+                                        }}
+                                    />
+                                    <button
+                                        className="action-btn danger"
+                                        onClick={() => handleStopSharing(selectedAlbum.id)}
+                                        disabled={actionLoading}
+                                    >
+                                        🚫 Tắt chia sẻ
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    className="action-btn share"
+                                    onClick={() => handleShare(selectedAlbum.id)}
+                                    disabled={actionLoading}
+                                >
+                                    🔗 Tạo link chia sẻ
+                                </button>
+                            )}
+
+                            {/* Delete Button */}
+                            <button
+                                className="action-btn danger"
+                                onClick={() => handleDelete(selectedAlbum.id)}
+                                disabled={actionLoading}
+                            >
+                                🗑️ Xóa album
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -146,3 +290,4 @@ const MyAlbums = () => {
 };
 
 export default MyAlbums;
+

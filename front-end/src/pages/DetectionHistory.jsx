@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getDetectionHistory } from '../services/api';
+import { getDetectionHistory, syncHistory, deleteHistory } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import ShareButtons from '../components/ShareButtons';
@@ -11,12 +11,39 @@ const DetectionHistory = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [syncing, setSyncing] = useState(false);
+    const [syncMessage, setSyncMessage] = useState(null);
+    const [selectMode, setSelectMode] = useState(false);
+    const [selected, setSelected] = useState([]);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (user) {
+            // Auto-sync temp history on login
+            handleAutoSync();
             fetchHistory();
         }
     }, [user]);
+
+    // Auto sync temp history when user logs in
+    const handleAutoSync = async () => {
+        const tempId = localStorage.getItem('detection_temp_id');
+        if (tempId) {
+            try {
+                setSyncing(true);
+                const result = await syncHistory(tempId);
+                if (result.status === 'synced' && result.count > 0) {
+                    setSyncMessage(`✅ Đã đồng bộ ${result.count} mục từ lịch sử tạm`);
+                    localStorage.removeItem('detection_temp_id');
+                    setTimeout(() => setSyncMessage(null), 3000);
+                }
+            } catch (err) {
+                console.error('Sync error:', err);
+            } finally {
+                setSyncing(false);
+            }
+        }
+    };
 
     const fetchHistory = async () => {
         try {
@@ -28,6 +55,33 @@ const DetectionHistory = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Handle delete selected items
+    const handleDelete = async () => {
+        if (selected.length === 0) return;
+        if (!confirm(`Xóa ${selected.length} mục đã chọn?`)) return;
+
+        try {
+            setDeleting(true);
+            await deleteHistory(selected);
+            // Remove from local state
+            setHistory(prev => prev.filter(item => !selected.includes(item.user_image_url)));
+            setSelected([]);
+            setSelectMode(false);
+        } catch (err) {
+            alert('Lỗi: ' + err.message);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const toggleSelect = (imageUrl) => {
+        setSelected(prev =>
+            prev.includes(imageUrl)
+                ? prev.filter(url => url !== imageUrl)
+                : [...prev, imageUrl]
+        );
     };
 
     if (!user) {
@@ -49,7 +103,7 @@ const DetectionHistory = () => {
             <div className="detection-history">
                 <div className="loading">
                     <div className="spinner"></div>
-                    <p>Đang tải lịch sử...</p>
+                    <p>{syncing ? 'Đang đồng bộ...' : 'Đang tải lịch sử...'}</p>
                 </div>
             </div>
         );
@@ -59,12 +113,40 @@ const DetectionHistory = () => {
         <div className="detection-history">
             <div className="page-header">
                 <h1>📸 Lịch sử nhận diện</h1>
-                <button onClick={() => navigate('/visual-search')} className="search-btn">
-                    + Nhận diện mới
-                </button>
+                <div className="header-actions">
+                    {history.length > 0 && (
+                        <button
+                            onClick={() => {
+                                setSelectMode(!selectMode);
+                                setSelected([]);
+                            }}
+                            className={`select-btn ${selectMode ? 'active' : ''}`}
+                        >
+                            {selectMode ? '✕ Hủy' : '☐ Chọn'}
+                        </button>
+                    )}
+                    <button onClick={() => navigate('/visual-search')} className="search-btn">
+                        + Nhận diện mới
+                    </button>
+                </div>
             </div>
 
+            {syncMessage && <div className="sync-message">{syncMessage}</div>}
             {error && <div className="error-message">{error}</div>}
+
+            {/* Delete bar */}
+            {selectMode && selected.length > 0 && (
+                <div className="delete-bar">
+                    <span>Đã chọn {selected.length} mục</span>
+                    <button
+                        onClick={handleDelete}
+                        disabled={deleting}
+                        className="delete-btn"
+                    >
+                        🗑️ {deleting ? 'Đang xóa...' : 'Xóa'}
+                    </button>
+                </div>
+            )}
 
             {history.length === 0 ? (
                 <div className="empty-state">
@@ -78,7 +160,16 @@ const DetectionHistory = () => {
             ) : (
                 <div className="history-list">
                     {history.map((item, index) => (
-                        <div key={index} className="history-item">
+                        <div
+                            key={index}
+                            className={`history-item ${selectMode ? 'selectable' : ''} ${selected.includes(item.user_image_url) ? 'selected' : ''}`}
+                            onClick={() => selectMode && toggleSelect(item.user_image_url)}
+                        >
+                            {selectMode && (
+                                <div className="checkbox">
+                                    {selected.includes(item.user_image_url) ? '☑' : '☐'}
+                                </div>
+                            )}
                             <div className="item-image">
                                 <img src={item.user_image_url} alt="Uploaded" />
                             </div>
@@ -93,23 +184,25 @@ const DetectionHistory = () => {
                                     </span>
                                 </div>
                             </div>
-                            <div className="item-actions">
-                                <ShareButtons
-                                    title={`Khám phá ${item.name}`}
-                                    text={`Tôi đã khám phá ${item.name} với Smart Sightseeing lúc ${new Date(item.timestamp).toLocaleString('vi-VN')} tại ${item.location_province || 'Việt Nam'}!`}
-                                    url={`${window.location.origin}/destination/${item.landmark_id}`}
-                                    ogUrl={`${window.location.origin}/api/og/${item.landmark_id}`}
-                                    userImageUrl={item.user_image_url}
-                                    timestamp={item.timestamp}
-                                    compact={true}
-                                />
-                                <Link
-                                    to={`/destination/${item.landmark_id}`}
-                                    className="view-btn"
-                                >
-                                    Xem chi tiết →
-                                </Link>
-                            </div>
+                            {!selectMode && (
+                                <div className="item-actions">
+                                    <ShareButtons
+                                        title={`Khám phá ${item.name}`}
+                                        text={`Tôi đã khám phá ${item.name} với Smart Sightseeing lúc ${new Date(item.timestamp).toLocaleString('vi-VN')} tại ${item.location_province || 'Việt Nam'}!`}
+                                        url={`${window.location.origin}/destination/${item.landmark_id}`}
+                                        ogUrl={`${window.location.origin}/api/og/${item.landmark_id}`}
+                                        userImageUrl={item.user_image_url}
+                                        timestamp={item.timestamp}
+                                        compact={true}
+                                    />
+                                    <Link
+                                        to={`/destination/${item.landmark_id}`}
+                                        className="view-btn"
+                                    >
+                                        Xem chi tiết →
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -119,3 +212,4 @@ const DetectionHistory = () => {
 };
 
 export default DetectionHistory;
+
