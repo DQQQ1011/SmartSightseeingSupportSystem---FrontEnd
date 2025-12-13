@@ -208,7 +208,7 @@ const VisualSearch = () => {
                                     {/* Share Buttons */}
                                     <ShareButtons
                                         title={`Khám phá ${result.landmark_info?.name}`}
-                                        text={`Tôi vừa khám phá ${result.landmark_info?.name} tại ${result.landmark_info?.location_province} với Smart Tourism AI!`}
+                                        text={`Tôi vừa khám phá ${result.landmark_info?.name} với Smart Sightseeing lúc ${new Date().toLocaleString('vi-VN')} tại ${result.landmark_info?.location_province}!`}
                                         url={`${window.location.origin}/destination/${result.landmark_id}`}
                                     />
 

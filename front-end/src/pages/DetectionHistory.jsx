@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getDetectionHistory } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import ShareButtons from '../components/ShareButtons';
 import './DetectionHistory.css';
 
 const DetectionHistory = () => {
@@ -92,12 +93,20 @@ const DetectionHistory = () => {
                                     </span>
                                 </div>
                             </div>
-                            <Link
-                                to={`/destination/${item.landmark_id}`}
-                                className="view-btn"
-                            >
-                                Xem chi tiết →
-                            </Link>
+                            <div className="item-actions">
+                                <ShareButtons
+                                    title={`Khám phá ${item.name}`}
+                                    text={`Tôi đã khám phá ${item.name} với Smart Sightseeing lúc ${new Date(item.timestamp).toLocaleString('vi-VN')} tại ${item.location_province || 'Việt Nam'}!`}
+                                    url={`${window.location.origin}/destination/${item.landmark_id}`}
+                                    compact={true}
+                                />
+                                <Link
+                                    to={`/destination/${item.landmark_id}`}
+                                    className="view-btn"
+                                >
+                                    Xem chi tiết →
+                                </Link>
+                            </div>
                         </div>
                     ))}
                 </div>

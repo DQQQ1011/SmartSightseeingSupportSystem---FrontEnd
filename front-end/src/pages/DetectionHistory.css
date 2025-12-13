@@ -165,6 +165,22 @@
     color: white;
 }
 
+/* Item Actions */
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.item-actions .share-buttons {
+    padding: 0;
+}
+
+.item-actions .share-buttons.compact {
+    gap: 0.25rem;
+}
+
 /* Error */
 .error-message {
     background: #fee2e2;
