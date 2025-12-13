@@ -49,6 +49,24 @@
     background: linear-gradient(135deg, #0d65d9 0%, #0a52b5 100%);
 }
 
+/* WhatsApp */
+.share-btn.whatsapp {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+.share-btn.whatsapp:hover {
+    background: linear-gradient(135deg, #128c7e 0%, #075e54 100%);
+}
+
+/* Telegram */
+.share-btn.telegram {
+    background: linear-gradient(135deg, #0088cc 0%, #006ba1 100%);
+}
+
+.share-btn.telegram:hover {
+    background: linear-gradient(135deg, #006ba1 0%, #005580 100%);
+}
+
 /* Zalo */
 .share-btn.zalo {
     background: linear-gradient(135deg, #0068ff 0%, #0052cc 100%);
@@ -67,13 +85,26 @@
     background: linear-gradient(135deg, #e6683c 0%, #dc2743 25%, #cc2366 50%, #bc1888 75%, #a01472 100%);
 }
 
-/* Native Share */
-.share-btn.native {
+/* Copy */
+.share-btn.copy {
     background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 }
 
-.share-btn.native:hover {
+.share-btn.copy:hover {
     background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+}
+
+.share-btn.copy.copied {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* Native Share */
+.share-btn.native {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.share-btn.native:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }
 
 /* Mobile responsive */
