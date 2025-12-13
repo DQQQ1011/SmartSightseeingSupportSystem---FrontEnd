@@ -5,16 +5,17 @@ const ShareButtons = ({ title, text, url, ogUrl, userImageUrl, timestamp, compac
     const [copied, setCopied] = useState(false);
     const shareUrl = url || window.location.href;
 
-    // Build OG URL with optional user image and timestamp params
-    let ogShareUrl = ogUrl || shareUrl;
-    if (ogUrl) {
-        const params = new URLSearchParams();
-        if (userImageUrl) params.set('img', userImageUrl);
-        if (timestamp) params.set('t', new Date(timestamp).getTime().toString());
-        const paramString = params.toString();
-        if (paramString) {
-            ogShareUrl = `${ogUrl}?${paramString}`;
-        }
+    // Check if we're in production (Vercel) - Edge Functions only work there
+    const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
+
+    // Build OG URL only for production, otherwise use regular URL
+    let ogShareUrl = shareUrl;
+    if (isProduction && ogUrl) {
+        // Build OG URL with optional params
+        const ogUrlObj = new URL(ogUrl, window.location.origin);
+        if (userImageUrl) ogUrlObj.searchParams.set('img', userImageUrl);
+        if (timestamp) ogUrlObj.searchParams.set('t', new Date(timestamp).getTime().toString());
+        ogShareUrl = ogUrlObj.toString();
     }
 
     const shareText = text || title || 'Check this out!';
