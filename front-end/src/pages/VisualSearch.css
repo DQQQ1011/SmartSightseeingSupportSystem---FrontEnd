@@ -228,3 +228,120 @@
     color: var(--text-secondary);
     margin-bottom: var(--space-6);
 }
+
+/* ==========================================
+   RESPONSIVE - Screen Size Adaptations
+   ========================================== */
+
+/* Result Modal - Make scrollable on small screens */
+.result-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Large screens (desktop) */
+@media (min-height: 800px) {
+    .result-modal {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .confidence-value {
+        font-size: 4.5rem;
+    }
+
+    .result-image-modal {
+        width: 200px;
+        height: 150px;
+    }
+}
+
+/* Medium screens (tablets, small laptops) */
+@media (max-height: 700px) {
+    .result-modal {
+        padding: var(--space-5);
+    }
+
+    .confidence-box {
+        padding: var(--space-4);
+        margin-bottom: var(--space-4);
+    }
+
+    .confidence-value {
+        font-size: 3rem;
+    }
+
+    .confidence-badge {
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--font-size-sm);
+    }
+
+    .result-image-modal {
+        width: 140px;
+        height: 100px;
+        margin-bottom: var(--space-3);
+    }
+
+    .result-info-modal {
+        margin-bottom: var(--space-4);
+    }
+
+    .result-info-modal h2 {
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* Small screens (phones) */
+@media (max-height: 600px) {
+    .result-overlay {
+        padding: var(--space-2);
+    }
+
+    .result-modal {
+        padding: var(--space-4);
+        max-height: 95vh;
+    }
+
+    .confidence-box {
+        padding: var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+
+    .confidence-value {
+        font-size: 2.5rem;
+    }
+
+    .result-image-modal {
+        width: 100px;
+        height: 75px;
+    }
+
+    .result-info-modal h2 {
+        font-size: var(--font-size-base);
+    }
+
+    .result-actions-modal {
+        gap: var(--space-2);
+    }
+
+    .result-actions-modal .btn {
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* Width-based responsiveness */
+@media (max-width: 480px) {
+    .result-modal {
+        max-width: 95%;
+        padding: var(--space-4);
+    }
+
+    .confidence-value {
+        font-size: 2.5rem;
+    }
+
+    .result-address-modal {
+        font-size: 0.75rem;
+    }
+}
