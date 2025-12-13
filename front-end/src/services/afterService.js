@@ -120,4 +120,78 @@ export const connectWebSocket = (userId, onMessage) => {
     return ws;
 };
 
+// ==========================================
+// ALBUM SHARING APIs
+// ==========================================
+
+/**
+ * Create share link for an album
+ * @param {string} albumId - Album ID
+ * @returns {Promise} Share token and URL hint
+ */
+export const createShareLink = async (albumId) => {
+    const response = await afterApi.post(`/albums/${albumId}/share`);
+    return response.data;
+};
+
+/**
+ * Revoke (disable) share link for an album
+ * @param {string} albumId - Album ID
+ * @returns {Promise} Success message
+ */
+export const revokeShareLink = async (albumId) => {
+    const response = await afterApi.delete(`/albums/${albumId}/share`);
+    return response.data;
+};
+
+/**
+ * View shared album (NO AUTH REQUIRED)
+ * @param {string} shareToken - Share token from URL
+ * @returns {Promise} Album data (title, photos, cover, download URL)
+ */
+export const getSharedAlbum = async (shareToken) => {
+    // Use axios directly without auth interceptor
+    const response = await axios.get(`${AFTER_API_URL}/shared-albums/${shareToken}`);
+    return response.data;
+};
+
+// ==========================================
+// ALBUM MANAGEMENT APIs
+// ==========================================
+
+/**
+ * Delete an album permanently
+ * @param {string} albumId - Album ID
+ * @returns {Promise} Success message
+ */
+export const deleteAlbum = async (albumId) => {
+    const response = await afterApi.delete(`/albums/${albumId}`);
+    return response.data;
+};
+
+/**
+ * Rename an album
+ * @param {string} albumId - Album ID
+ * @param {string} newTitle - New album title
+ * @returns {Promise} Success message
+ */
+export const renameAlbum = async (albumId, newTitle) => {
+    const response = await afterApi.patch(`/albums/${albumId}/rename`, {
+        title: newTitle
+    });
+    return response.data;
+};
+
+/**
+ * Delete a photo from an album
+ * @param {string} albumId - Album ID
+ * @param {string} photoId - Photo ID
+ * @returns {Promise} Success message
+ */
+export const deletePhotoFromAlbum = async (albumId, photoId) => {
+    const response = await afterApi.delete(`/albums/${albumId}/photos/${photoId}`);
+    return response.data;
+};
+
 export default afterApi;
+

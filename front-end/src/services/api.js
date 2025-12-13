@@ -254,5 +254,48 @@ export const getTempHistory = async (tempId) => {
     }
 };
 
+/**
+ * Get detailed history for a specific landmark (During module)
+ * @param {string} landmarkId - Landmark ID
+ * @returns {Promise} History detail with landmark info
+ */
+export const getHistoryDetail = async (landmarkId) => {
+    try {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const response = await axios.get(`${DURING_API_URL}/history/detail/${landmarkId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Get History Detail Error:', error);
+        throw error;
+    }
+};
+
+/**
+ * Delete history items (During module)
+ * @param {string[]} imageUrls - Array of image URLs to delete
+ * @returns {Promise} Delete result
+ */
+export const deleteHistory = async (imageUrls) => {
+    try {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const response = await axios.delete(`${DURING_API_URL}/history/delete`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            data: { image_urls: imageUrls },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Delete History Error:', error);
+        throw error;
+    }
+};
+
 export default api;
+
 

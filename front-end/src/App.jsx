@@ -20,6 +20,7 @@ import DetectionHistory from './pages/DetectionHistory';
 import AlbumCreator from './pages/AlbumCreator';
 import MyAlbums from './pages/MyAlbums';
 import TripSummary from './pages/TripSummary';
+import SharedAlbum from './pages/SharedAlbum';
 
 // Pages - Auth
 import Login from './pages/Login';
@@ -47,6 +48,9 @@ function App() {
 
                 {/* Public Routes - During Module */}
                 <Route path="/visual-search" element={<VisualSearch />} />
+
+                {/* Public Routes - After Module (Shared Albums) */}
+                <Route path="/shared/:shareToken" element={<SharedAlbum />} />
 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login />} />
