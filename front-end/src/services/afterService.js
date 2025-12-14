@@ -9,7 +9,7 @@ const AFTER_API_URL = import.meta.env.VITE_AFTER_API_URL || '/after';
 
 const afterApi = axios.create({
     baseURL: AFTER_API_URL,
-    timeout: 120000, // 2 minutes for large uploads
+    timeout: 1500000, // 25 minutes for large uploads
 });
 
 // Add auth token to requests

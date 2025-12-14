@@ -135,15 +135,29 @@ const DetectionHistory = () => {
             {error && <div className="error-message">{error}</div>}
 
             {/* Delete bar */}
-            {selectMode && selected.length > 0 && (
+            {selectMode && (
                 <div className="delete-bar">
-                    <span>Đã chọn {selected.length} mục</span>
+                    <div className="delete-bar-left">
+                        <span>Đã chọn {selected.length} / {history.length} mục</span>
+                        <button
+                            onClick={() => {
+                                if (selected.length === history.length) {
+                                    setSelected([]);
+                                } else {
+                                    setSelected(history.map(item => item.user_image_url));
+                                }
+                            }}
+                            className="select-all-btn"
+                        >
+                            {selected.length === history.length ? '☐ Bỏ chọn tất cả' : '☑ Chọn tất cả'}
+                        </button>
+                    </div>
                     <button
                         onClick={handleDelete}
-                        disabled={deleting}
+                        disabled={deleting || selected.length === 0}
                         className="delete-btn"
                     >
-                        🗑️ {deleting ? 'Đang xóa...' : 'Xóa'}
+                        🗑️ {deleting ? 'Đang xóa...' : `Xóa ${selected.length > 0 ? `(${selected.length})` : ''}`}
                     </button>
                 </div>
             )}

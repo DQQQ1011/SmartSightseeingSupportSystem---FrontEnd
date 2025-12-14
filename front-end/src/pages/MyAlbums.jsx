@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMyAlbums, createShareLink, revokeShareLink, deleteAlbum, renameAlbum } from '../services/afterService';
+import { getMyAlbums, createShareLink, revokeShareLink, deleteAlbum, renameAlbum, deletePhotoFromAlbum } from '../services/afterService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './MyAlbums.css';
@@ -100,6 +100,26 @@ const MyAlbums = () => {
             }
             setEditingTitle(null);
             setNewTitle('');
+        } catch (err) {
+            alert('❌ Lỗi: ' + err.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle Delete Photo from Album
+    const handleDeletePhoto = async (albumId, photoId) => {
+        if (!confirm('Xóa ảnh này khỏi album?')) return;
+        try {
+            setActionLoading(true);
+            await deletePhotoFromAlbum(albumId, photoId);
+            // Update local state
+            const updatedPhotos = selectedAlbum.photos.filter(p => p.id !== photoId);
+            setSelectedAlbum(prev => ({ ...prev, photos: updatedPhotos }));
+            setAlbums(prev => prev.map(a =>
+                a.id === albumId ? { ...a, photos: updatedPhotos } : a
+            ));
+            alert('✅ Đã xóa ảnh');
         } catch (err) {
             alert('❌ Lỗi: ' + err.message);
         } finally {
@@ -224,8 +244,19 @@ const MyAlbums = () => {
                         {/* Photos Grid */}
                         <div className="photos-grid">
                             {selectedAlbum.photos?.map((photo, index) => (
-                                <div key={index} className="photo-item">
+                                <div key={photo.id || index} className="photo-item">
                                     <img src={photo.image_url} alt={photo.filename} />
+                                    <button
+                                        className="photo-delete-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeletePhoto(selectedAlbum.id, photo.id);
+                                        }}
+                                        disabled={actionLoading}
+                                        title="Xóa ảnh"
+                                    >
+                                        🗑️
+                                    </button>
                                 </div>
                             ))}
                         </div>
