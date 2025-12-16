@@ -200,24 +200,6 @@ const TripSummary = () => {
         }
     };
 
-    // Get photo for a point (from selected albums)
-    const getPhotoForPoint = (pointIndex) => {
-        const selectedAlbumsData = albums.filter(a => selectedAlbums.includes(a.id));
-        if (selectedAlbumsData[pointIndex]?.photos?.[0]?.image_url) {
-            return selectedAlbumsData[pointIndex].photos[0].image_url;
-        }
-        if (selectedAlbumsData[pointIndex]?.cover_photo_url) {
-            return selectedAlbumsData[pointIndex].cover_photo_url;
-        }
-        return null;
-    };
-
-    // Get album data for a point (for popup preview)
-    const getAlbumForPoint = (pointIndex) => {
-        const selectedAlbumsData = albums.filter(a => selectedAlbums.includes(a.id));
-        return selectedAlbumsData[pointIndex] || null;
-    };
-
     // Calculate map center and bounds
     const getMapCenter = () => {
         if (!currentSummary?.points?.length) {
@@ -500,9 +482,10 @@ const TripSummary = () => {
 
                                         {/* Photo Markers */}
                                         {currentSummary.points.map((point, index) => {
-                                            // Use locations from backend response
+                                            // Use locations from backend response (already sorted by date)
                                             const location = currentSummary.locations?.[index];
-                                            const photoUrl = location?.cover_url || getPhotoForPoint(index);
+                                            // Only use cover_url from backend - it's already matched with correct point
+                                            const photoUrl = location?.cover_url || location?.sample_photos?.[0] || null;
                                             const isStart = index === 0;
                                             const isEnd = index === currentSummary.points.length - 1;
                                             const icon = createPhotoIcon(photoUrl, index, isStart, isEnd);
