@@ -43,9 +43,9 @@ const MyAlbums = () => {
             setShareLinks(prev => ({ ...prev, [albumId]: shareUrl }));
             // Copy to clipboard
             navigator.clipboard.writeText(shareUrl);
-            alert('✅ Đã tạo link chia sẻ và copy vào clipboard!');
+            alert('Đã tạo link chia sẻ và copy vào clipboard!');
         } catch (err) {
-            alert('❌ Không thể tạo link: ' + err.message);
+            alert('Không thể tạo link: ' + err.message);
         } finally {
             setActionLoading(false);
         }
@@ -62,9 +62,9 @@ const MyAlbums = () => {
                 delete updated[albumId];
                 return updated;
             });
-            alert('✅ Đã tắt chia sẻ album');
+            alert('Đã tắt chia sẻ album');
         } catch (err) {
-            alert('❌ Lỗi: ' + err.message);
+            alert('Lỗi: ' + err.message);
         } finally {
             setActionLoading(false);
         }
@@ -72,15 +72,15 @@ const MyAlbums = () => {
 
     // Handle Delete Album
     const handleDelete = async (albumId) => {
-        if (!confirm('⚠️ Xóa album vĩnh viễn? Hành động này không thể hoàn tác!')) return;
+        if (!confirm('Xóa album vĩnh viễn? Hành động này không thể hoàn tác!')) return;
         try {
             setActionLoading(true);
             await deleteAlbum(albumId);
             setAlbums(prev => prev.filter(a => a.id !== albumId));
             setSelectedAlbum(null);
-            alert('✅ Đã xóa album');
+            alert('Đã xóa album');
         } catch (err) {
-            alert('❌ Lỗi: ' + err.message);
+            alert('Lỗi: ' + err.message);
         } finally {
             setActionLoading(false);
         }
@@ -101,7 +101,7 @@ const MyAlbums = () => {
             setEditingTitle(null);
             setNewTitle('');
         } catch (err) {
-            alert('❌ Lỗi: ' + err.message);
+            alert('Lỗi: ' + err.message);
         } finally {
             setActionLoading(false);
         }
@@ -119,9 +119,9 @@ const MyAlbums = () => {
             setAlbums(prev => prev.map(a =>
                 a.id === albumId ? { ...a, photos: updatedPhotos } : a
             ));
-            alert('✅ Đã xóa ảnh');
+            alert('Đã xóa ảnh');
         } catch (err) {
-            alert('❌ Lỗi: ' + err.message);
+            alert('Lỗi: ' + err.message);
         } finally {
             setActionLoading(false);
         }
@@ -131,7 +131,7 @@ const MyAlbums = () => {
         return (
             <div className="my-albums">
                 <div className="auth-required">
-                    <h2>🔒 Yêu cầu đăng nhập</h2>
+                    <h2>Yêu cầu đăng nhập</h2>
                     <p>Bạn cần đăng nhập để xem album của mình.</p>
                     <button onClick={() => navigate('/login')} className="login-btn">
                         Đăng nhập ngay
@@ -155,7 +155,7 @@ const MyAlbums = () => {
     return (
         <div className="my-albums">
             <div className="page-header">
-                <h1>🖼️ Album của tôi</h1>
+                <h1>Album của tôi</h1>
                 <button onClick={() => navigate('/album-creator')} className="create-btn">
                     + Tạo album mới
                 </button>
@@ -165,11 +165,11 @@ const MyAlbums = () => {
 
             {albums.length === 0 ? (
                 <div className="empty-state">
-                    <span className="empty-icon">📷</span>
+                    <span className="empty-icon"></span>
                     <h3>Chưa có album nào</h3>
                     <p>Hãy tạo album đầu tiên từ những bức ảnh du lịch của bạn!</p>
                     <button onClick={() => navigate('/album-creator')} className="create-btn large">
-                        🚀 Tạo album ngay
+                        Tạo album ngay
                     </button>
                 </div>
             ) : (
@@ -184,7 +184,7 @@ const MyAlbums = () => {
                                 {album.cover_photo_url ? (
                                     <img src={album.cover_photo_url} alt={album.title} />
                                 ) : (
-                                    <div className="no-cover">📷</div>
+                                    <div className="no-cover"></div>
                                 )}
                             </div>
                             <div className="album-info">
@@ -231,7 +231,7 @@ const MyAlbums = () => {
                                     }}
                                     title="Đổi tên"
                                 >
-                                    ✏️
+                                    Đổi tên
                                 </button>
                             </div>
                         )}
@@ -255,7 +255,7 @@ const MyAlbums = () => {
                                         disabled={actionLoading}
                                         title="Xóa ảnh"
                                     >
-                                        🗑️
+                                        Xóa
                                     </button>
                                 </div>
                             ))}
@@ -270,7 +270,7 @@ const MyAlbums = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    📥 Tải về ZIP
+                                    Tải về ZIP
                                 </a>
                             )}
 
@@ -291,7 +291,7 @@ const MyAlbums = () => {
                                         onClick={() => handleStopSharing(selectedAlbum.id)}
                                         disabled={actionLoading}
                                     >
-                                        🚫 Tắt chia sẻ
+                                        Tắt chia sẻ
                                     </button>
                                 </div>
                             ) : (
@@ -300,7 +300,7 @@ const MyAlbums = () => {
                                     onClick={() => handleShare(selectedAlbum.id)}
                                     disabled={actionLoading}
                                 >
-                                    🔗 Tạo link chia sẻ
+                                    Tạo link chia sẻ
                                 </button>
                             )}
 
@@ -310,7 +310,7 @@ const MyAlbums = () => {
                                 onClick={() => handleDelete(selectedAlbum.id)}
                                 disabled={actionLoading}
                             >
-                                🗑️ Xóa album
+                                Xóa album
                             </button>
                         </div>
                     </div>

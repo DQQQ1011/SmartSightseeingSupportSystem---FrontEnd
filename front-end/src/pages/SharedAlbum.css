@@ -87,7 +87,7 @@
 }
 
 .photo-count::before {
-    content: '📷';
+    content: '';
 }
 
 .download-btn {

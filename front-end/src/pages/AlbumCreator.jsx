@@ -14,6 +14,7 @@ const AlbumCreator = () => {
     const [albums, setAlbums] = useState([]);
     const [error, setError] = useState(null);
     const [stage, setStage] = useState('upload'); // upload, processing, done
+    const [selectedAlbum, setSelectedAlbum] = useState(null); // For viewing album details
 
     const onDrop = useCallback((acceptedFiles) => {
         const imageFiles = acceptedFiles.filter(file =>
@@ -75,7 +76,7 @@ const AlbumCreator = () => {
         return (
             <div className="album-creator">
                 <div className="auth-required">
-                    <h2>🔒 Yêu cầu đăng nhập</h2>
+                    <h2>Yêu cầu đăng nhập</h2>
                     <p>Bạn cần đăng nhập để sử dụng tính năng tạo album.</p>
                     <button onClick={() => navigate('/login')} className="login-btn">
                         Đăng nhập ngay
@@ -88,7 +89,7 @@ const AlbumCreator = () => {
     return (
         <div className="album-creator">
             <div className="page-header">
-                <h1>🖼️ Tạo Album Ảnh</h1>
+                <h1>Tạo Album Ảnh</h1>
                 <p>Upload ảnh chuyến đi để AI tự động phân loại và tạo album</p>
             </div>
 
@@ -99,7 +100,7 @@ const AlbumCreator = () => {
                     <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
                         <input {...getInputProps()} />
                         <div className="dropzone-content">
-                            <span className="upload-icon">📁</span>
+                            <span className="upload-icon"></span>
                             {isDragActive ? (
                                 <p>Thả ảnh vào đây...</p>
                             ) : (
@@ -135,7 +136,7 @@ const AlbumCreator = () => {
                                 onClick={handleUpload}
                                 disabled={uploading}
                             >
-                                🚀 Tạo Album ({files.length} ảnh)
+                                Tạo Album ({files.length} ảnh)
                             </button>
                         </div>
                     )}
@@ -159,19 +160,24 @@ const AlbumCreator = () => {
             {stage === 'done' && (
                 <div className="results-section">
                     <div className="success-header">
-                        <span className="success-icon">✅</span>
+                        <span className="success-icon"></span>
                         <h2>Tạo album thành công!</h2>
                         <p>Đã tạo {albums.filter(a => a.method !== 'filters_rejected').length} album từ {files.length} ảnh</p>
                     </div>
 
                     <div className="albums-grid">
                         {albums.filter(a => a.method !== 'filters_rejected').map((album) => (
-                            <div key={album.id} className="album-card">
+                            <div
+                                key={album.id}
+                                className="album-card"
+                                onClick={() => setSelectedAlbum(album)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <div className="album-cover">
                                     {album.cover_photo_url ? (
                                         <img src={album.cover_photo_url} alt={album.title} />
                                     ) : (
-                                        <div className="no-cover">📷</div>
+                                        <div className="no-cover"></div>
                                     )}
                                 </div>
                                 <div className="album-info">
@@ -185,8 +191,9 @@ const AlbumCreator = () => {
                                         className="download-btn"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        📥 Tải về ZIP
+                                        Tải về ZIP
                                     </a>
                                 )}
                             </div>
@@ -202,11 +209,49 @@ const AlbumCreator = () => {
 
                     <div className="action-buttons">
                         <button onClick={resetUpload} className="new-upload-btn">
-                            📁 Upload thêm ảnh
+                            Upload thêm ảnh
                         </button>
                         <button onClick={() => navigate('/my-albums')} className="view-albums-btn">
-                            🖼️ Xem tất cả album
+                            Xem tất cả album
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Album Detail Modal */}
+            {selectedAlbum && (
+                <div className="modal-overlay" onClick={() => setSelectedAlbum(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <button className="close-btn" onClick={() => setSelectedAlbum(null)}>×</button>
+
+                        <h2>{selectedAlbum.title}</h2>
+                        <p className="modal-meta">
+                            {selectedAlbum.photos?.length || 0} ảnh •
+                            Phương thức: {selectedAlbum.method}
+                        </p>
+
+                        {/* Photos Grid */}
+                        <div className="photos-grid">
+                            {selectedAlbum.photos?.map((photo, index) => (
+                                <div key={photo.id || index} className="photo-item">
+                                    <img src={photo.image_url} alt={photo.filename} />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="album-actions">
+                            {selectedAlbum.download_zip_url && (
+                                <a
+                                    href={selectedAlbum.download_zip_url}
+                                    className="action-btn download"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Tải về ZIP
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

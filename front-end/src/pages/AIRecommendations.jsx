@@ -116,11 +116,11 @@ const AIRecommendations = () => {
                                     )}
                                     <div className="result-content">
                                         <h3>{rec.name}</h3>
-                                        <p className="result-location">📍 {rec.location_province}</p>
+                                        <p className="result-location">{rec.location_province}</p>
 
                                         {rec.justification_summary && (
                                             <p className="result-justification">
-                                                💡 {rec.justification_summary}
+                                                {rec.justification_summary}
                                             </p>
                                         )}
 
@@ -134,7 +134,7 @@ const AIRecommendations = () => {
 
                                         {rec.weather && (
                                             <p className="result-weather">
-                                                🌤️ {rec.weather.temp}°C - {rec.weather.description}
+                                                {rec.weather.temp}°C - {rec.weather.description}
                                             </p>
                                         )}
 

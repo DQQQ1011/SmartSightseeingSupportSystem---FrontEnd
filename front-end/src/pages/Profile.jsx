@@ -38,13 +38,13 @@ const Profile = () => {
                         <h2>Truy cập nhanh</h2>
                         <div className="quick-links">
                             <Link to="/favorites" className="quick-link">
-                                ❤️ Yêu thích
+                                Yêu thích
                             </Link>
                             <Link to="/destinations" className="quick-link">
-                                🗺️ Khám phá
+                                Khám phá
                             </Link>
                             <Link to="/recommendations" className="quick-link">
-                                ✨ Gợi ý AI
+                                Gợi ý AI
                             </Link>
                         </div>
                     </div>

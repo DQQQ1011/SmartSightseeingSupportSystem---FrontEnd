@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMyAlbums, createTripSummary, getSummaryHistory } from '../services/afterService';
+import { getMyAlbums, createTripSummary, getSummaryHistory, geocodeAddress } from '../services/afterService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
@@ -16,36 +16,29 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Custom photo marker icon
+// Custom marker icon - Photo marker with album cover
 const createPhotoIcon = (photoUrl, index, isStart, isEnd) => {
+    // Color coding: green for start, red for end, blue for middle
     const color = isStart ? '#10b981' : isEnd ? '#ef4444' : '#3b82f6';
+    const shadowColor = isStart ? 'rgba(16, 185, 129, 0.5)' : isEnd ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)';
 
-    if (photoUrl) {
-        return L.divIcon({
-            className: 'custom-photo-marker',
-            html: `
-                <div class="photo-marker ${isStart ? 'start' : ''} ${isEnd ? 'end' : ''}" style="border-color: ${color}">
-                    <img src="${photoUrl}" alt="Point ${index + 1}" />
-                    <div class="marker-badge" style="background: ${color}">${index + 1}</div>
-                </div>
-            `,
-            iconSize: [50, 50],
-            iconAnchor: [25, 25],
-            popupAnchor: [0, -25],
-        });
-    }
+    // If we have a photo, show it in marker
+    const photoHtml = photoUrl
+        ? `<img src="${photoUrl}" alt="Location ${index + 1}" class="marker-photo" />`
+        : `<span class="marker-num">${index + 1}</span>`;
 
     return L.divIcon({
-        className: 'custom-photo-marker',
+        className: 'custom-marker',
         html: `
-            <div class="photo-marker ${isStart ? 'start' : ''} ${isEnd ? 'end' : ''}" style="border-color: ${color}">
-                <div class="marker-number" style="color: ${color}">${index + 1}</div>
-                <div class="marker-badge" style="background: ${color}">${index + 1}</div>
+            <div class="photo-marker" style="--marker-color: ${color}; --marker-shadow: ${shadowColor}">
+                ${photoHtml}
+                <div class="marker-badge">${index + 1}</div>
+                <div class="marker-pointer"></div>
             </div>
         `,
-        iconSize: [50, 50],
-        iconAnchor: [25, 25],
-        popupAnchor: [0, -25],
+        iconSize: [50, 60],
+        iconAnchor: [25, 60],
+        popupAnchor: [0, -55],
     });
 };
 
@@ -67,6 +60,11 @@ const TripSummary = () => {
     const [editingLocation, setEditingLocation] = useState(null);
     const [locationInput, setLocationInput] = useState({ name: '', lat: '', lon: '' });
 
+    // Geocoding state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+
     useEffect(() => {
         if (user) {
             fetchData();
@@ -78,7 +76,7 @@ const TripSummary = () => {
             setLoading(true);
             const [albumsData, historyData] = await Promise.all([
                 getMyAlbums(),
-                getSummaryHistory(user.user_id),
+                getSummaryHistory(),
             ]);
             setAlbums(albumsData || []);
             setSummaries(historyData || []);
@@ -119,7 +117,7 @@ const TripSummary = () => {
         }
     };
 
-    // Save manual location
+    // Save manual location - uses album_id to match backend spec
     const saveManualLocation = () => {
         if (!locationInput.name.trim()) return;
 
@@ -127,9 +125,9 @@ const TripSummary = () => {
         const lon = parseFloat(locationInput.lon) || 0;
 
         setManualLocations(prev => [
-            ...prev.filter(l => l.album_title !== editingLocation),
+            ...prev.filter(l => l.album_id !== editingLocation),
             {
-                album_title: editingLocation,
+                album_id: editingLocation, // Backend expects album_id
                 name: locationInput.name,
                 lat: lat,
                 lon: lon
@@ -137,6 +135,35 @@ const TripSummary = () => {
         ]);
         setEditingLocation(null);
         setLocationInput({ name: '', lat: '', lon: '' });
+        setSearchQuery('');
+        setSearchResults([]);
+    };
+
+    // Search address using geocoding API
+    const handleAddressSearch = async () => {
+        if (!searchQuery.trim()) return;
+
+        setSearching(true);
+        try {
+            const results = await geocodeAddress(searchQuery);
+            setSearchResults(results || []);
+        } catch (err) {
+            console.error('Geocoding error:', err);
+            setSearchResults([]);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    // Select a geocoding result
+    const selectGeoResult = (result) => {
+        setLocationInput({
+            name: result.display_name.split(',')[0], // Take first part of display name
+            lat: result.lat.toString(),
+            lon: result.lon.toString()
+        });
+        setSearchResults([]);
+        setSearchQuery('');
     };
 
     const handleGenerate = async () => {
@@ -155,11 +182,12 @@ const TripSummary = () => {
             const result = await createTripSummary(
                 {
                     albums: albumData.map(a => ({
+                        album_id: a.id, // Include album_id for backend matching
                         title: a.title,
                         photos: a.photos || [],
                     })),
                 },
-                manualLocations // Pass manual locations
+                manualLocations // Manual locations now use album_id
             );
 
             setCurrentSummary(result);
@@ -182,6 +210,12 @@ const TripSummary = () => {
             return selectedAlbumsData[pointIndex].cover_photo_url;
         }
         return null;
+    };
+
+    // Get album data for a point (for popup preview)
+    const getAlbumForPoint = (pointIndex) => {
+        const selectedAlbumsData = albums.filter(a => selectedAlbums.includes(a.id));
+        return selectedAlbumsData[pointIndex] || null;
     };
 
     // Calculate map center and bounds
@@ -208,7 +242,7 @@ const TripSummary = () => {
         return (
             <div className="trip-summary">
                 <div className="auth-required">
-                    <h2>🔒 Yêu cầu đăng nhập</h2>
+                    <h2>Yêu cầu đăng nhập</h2>
                     <p>Bạn cần đăng nhập để sử dụng tính năng này.</p>
                     <button onClick={() => navigate('/login')} className="login-btn">
                         Đăng nhập ngay
@@ -235,7 +269,7 @@ const TripSummary = () => {
     return (
         <div className="trip-summary">
             <div className="page-header">
-                <h1>🗺️ Tổng kết chuyến đi</h1>
+                <h1>Tổng kết chuyến đi</h1>
                 <p>Tạo bản tổng kết chuyến đi từ album ảnh của bạn</p>
             </div>
 
@@ -244,20 +278,20 @@ const TripSummary = () => {
                     className={`tab ${tab === 'create' ? 'active' : ''}`}
                     onClick={() => setTab('create')}
                 >
-                    ✨ Tạo mới
+                    Tạo mới
                 </button>
                 <button
                     className={`tab ${tab === 'history' ? 'active' : ''}`}
                     onClick={() => setTab('history')}
                 >
-                    📜 Lịch sử ({summaries.length})
+                    Lịch sử ({summaries.length})
                 </button>
             </div>
 
             {error && <div className="error-message">{error}</div>}
 
-            {/* Step Indicator */}
-            {!currentSummary && step < 3 && (
+            {/* Step Indicator - Only show on Create tab */}
+            {tab === 'create' && !currentSummary && step < 3 && (
                 <div className="step-indicator">
                     <div className={`step-item ${step >= 1 ? 'active' : ''}`}>
                         <span className="step-num">1</span>
@@ -276,10 +310,11 @@ const TripSummary = () => {
                 </div>
             )}
 
-            {/* Step 1: Select Albums */}
-            {step === 1 && (
+
+            {/* Step 1: Select Albums - Only on Create tab */}
+            {tab === 'create' && step === 1 && (
                 <>
-                    <h3>📷 Chọn album để tạo summary</h3>
+                    <h3>Chọn album để tạo summary</h3>
                     {albums.length === 0 ? (
                         <div className="empty-state">
                             <p>Chưa có album nào. Hãy tạo album trước!</p>
@@ -302,14 +337,14 @@ const TripSummary = () => {
                                                 {album.cover_photo_url ? (
                                                     <img src={album.cover_photo_url} alt={album.title} />
                                                 ) : (
-                                                    <div className="no-thumb">📷</div>
+                                                    <div className="no-thumb"></div>
                                                 )}
                                             </div>
                                             <div className="album-details">
                                                 <strong>{album.title}</strong>
                                                 <span>{album.photos?.length || 0} ảnh</span>
                                                 {!hasGPS && (
-                                                    <span className="no-gps-badge">⚠️ Thiếu GPS</span>
+                                                    <span className="no-gps-badge">Thiếu GPS</span>
                                                 )}
                                             </div>
                                             <div className="check-mark">✓</div>
@@ -324,9 +359,9 @@ const TripSummary = () => {
                                 disabled={generating || selectedAlbums.length === 0}
                             >
                                 {generating ? (
-                                    <>⏳ Đang xử lý...</>
+                                    <>Đang xử lý...</>
                                 ) : (
-                                    <>➡️ Tiếp tục ({selectedAlbums.length} album)</>
+                                    <>Tiếp tục ({selectedAlbums.length} album)</>
                                 )}
                             </button>
                         </>
@@ -334,20 +369,21 @@ const TripSummary = () => {
                 </>
             )}
 
-            {/* Step 2: Manual Location Input */}
-            {step === 2 && (
+
+            {/* Step 2: Manual Location Input - Only on Create tab */}
+            {tab === 'create' && step === 2 && (
                 <div className="manual-location-step">
                     <button className="back-btn" onClick={() => setStep(1)}>
                         ← Quay lại
                     </button>
-                    <h3>📍 Thêm vị trí cho album thiếu GPS</h3>
+                    <h3>Thêm vị trí cho album thiếu GPS</h3>
                     <p className="step-desc">
                         Một số album chưa có thông tin GPS. Vui lòng thêm vị trí để tạo bản đồ chính xác.
                     </p>
 
                     <div className="location-list">
                         {getAlbumsNeedingLocation().map((album) => {
-                            const savedLocation = manualLocations.find(l => l.album_title === album.title);
+                            const savedLocation = manualLocations.find(l => l.album_id === album.id);
                             return (
                                 <div key={album.id} className="location-item">
                                     <div className="location-album">
@@ -355,7 +391,7 @@ const TripSummary = () => {
                                             {album.cover_photo_url ? (
                                                 <img src={album.cover_photo_url} alt={album.title} />
                                             ) : (
-                                                <div className="no-thumb">📷</div>
+                                                <div className="no-thumb"></div>
                                             )}
                                         </div>
                                         <div className="album-info">
@@ -365,9 +401,9 @@ const TripSummary = () => {
                                     </div>
                                     {savedLocation ? (
                                         <div className="saved-location">
-                                            <span className="location-name">📍 {savedLocation.name}</span>
+                                            <span className="location-name">{savedLocation.name}</span>
                                             <button onClick={() => {
-                                                setEditingLocation(album.title);
+                                                setEditingLocation(album.id);
                                                 setLocationInput({
                                                     name: savedLocation.name,
                                                     lat: savedLocation.lat.toString(),
@@ -378,7 +414,7 @@ const TripSummary = () => {
                                     ) : (
                                         <button
                                             className="add-location-btn"
-                                            onClick={() => setEditingLocation(album.title)}
+                                            onClick={() => setEditingLocation(album.id)}
                                         >
                                             + Thêm vị trí
                                         </button>
@@ -394,9 +430,9 @@ const TripSummary = () => {
                         disabled={generating}
                     >
                         {generating ? (
-                            <>⏳ Đang tạo summary...</>
+                            <>Đang tạo summary...</>
                         ) : (
-                            <>🚀 Tạo tổng kết</>
+                            <>Tạo tổng kết</>
                         )}
                     </button>
                 </div>
@@ -414,7 +450,7 @@ const TripSummary = () => {
 
                     <div className="summary-content">
                         <div className="summary-header">
-                            <span className="success-icon">✅</span>
+                            <span className="success-icon"></span>
                             <h2>{currentSummary.trip_title}</h2>
                         </div>
 
@@ -434,13 +470,13 @@ const TripSummary = () => {
                         </div>
 
                         <div className="summary-dates">
-                            📅 {currentSummary.start_date} → {currentSummary.end_date}
+                            {currentSummary.start_date} → {currentSummary.end_date}
                         </div>
 
                         {/* Interactive Map with Photo Overlays */}
                         {currentSummary.points?.length > 0 && (
                             <div className="map-section interactive-map">
-                                <h3>🗺️ Bản đồ hành trình</h3>
+                                <h3>Bản đồ hành trình</h3>
                                 <div className="map-container">
                                     <MapContainer
                                         center={mapCenter}
@@ -464,7 +500,9 @@ const TripSummary = () => {
 
                                         {/* Photo Markers */}
                                         {currentSummary.points.map((point, index) => {
-                                            const photoUrl = getPhotoForPoint(index);
+                                            // Use locations from backend response
+                                            const location = currentSummary.locations?.[index];
+                                            const photoUrl = location?.cover_url || getPhotoForPoint(index);
                                             const isStart = index === 0;
                                             const isEnd = index === currentSummary.points.length - 1;
                                             const icon = createPhotoIcon(photoUrl, index, isStart, isEnd);
@@ -475,13 +513,36 @@ const TripSummary = () => {
                                                     position={[point[0], point[1]]}
                                                     icon={icon}
                                                 >
-                                                    <Popup>
-                                                        <div className="marker-popup">
-                                                            {photoUrl && (
-                                                                <img src={photoUrl} alt={currentSummary.timeline[index]} />
+                                                    <Popup className="album-popup" maxWidth={300} minWidth={250}>
+                                                        <div className="popup-content">
+                                                            <div className="popup-header">
+                                                                <span className={`popup-badge ${isStart ? 'start' : isEnd ? 'end' : 'middle'}`}>
+                                                                    {isStart ? 'Bắt đầu' : isEnd ? 'Kết thúc' : `Điểm ${index + 1}`}
+                                                                </span>
+                                                            </div>
+                                                            <h4 className="popup-title">{location?.title || currentSummary.timeline[index] || `Điểm ${index + 1}`}</h4>
+
+                                                            {location?.sample_photos && location.sample_photos.length > 0 && (
+                                                                <div className="popup-gallery">
+                                                                    {location.sample_photos.slice(0, 4).map((url, pIdx) => (
+                                                                        <div key={pIdx} className="popup-thumb">
+                                                                            <img
+                                                                                src={url}
+                                                                                alt={`Photo ${pIdx + 1}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                    {location.photo_count > 4 && (
+                                                                        <div className="popup-more">
+                                                                            +{location.photo_count - 4}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             )}
-                                                            <h4>{currentSummary.timeline[index] || `Điểm ${index + 1}`}</h4>
-                                                            <span className="popup-index">Điểm {index + 1}</span>
+
+                                                            <div className="popup-info">
+                                                                <span>{location?.photo_count || 0} ảnh</span>
+                                                            </div>
                                                         </div>
                                                     </Popup>
                                                 </Marker>
@@ -505,7 +566,7 @@ const TripSummary = () => {
 
                         {currentSummary.timeline && currentSummary.timeline.length > 0 && (
                             <div className="timeline-section">
-                                <h3>📍 Timeline</h3>
+                                <h3>Timeline</h3>
                                 <ul className="timeline">
                                     {currentSummary.timeline.map((item, index) => (
                                         <li key={index} className="timeline-item">
@@ -535,14 +596,55 @@ const TripSummary = () => {
                 </div>
             )}
 
-            {/* Location Input Modal */}
+            {/* Location Input Modal with Geocoding */}
             {editingLocation && (
                 <div className="modal-overlay" onClick={() => setEditingLocation(null)}>
                     <div className="location-modal" onClick={e => e.stopPropagation()}>
                         <button className="close-btn" onClick={() => setEditingLocation(null)}>×</button>
-                        <h3>📍 Thêm vị trí cho "{editingLocation}"</h3>
+                        <h3>Thêm vị trí</h3>
 
                         <div className="modal-form">
+                            {/* Address Search Section */}
+                            <div className="form-group search-group">
+                                <label>Tìm địa chỉ</label>
+                                <div className="search-input-row">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddressSearch()}
+                                        placeholder="Nhập địa chỉ: Chợ Bến Thành, Cầu Rồng..."
+                                    />
+                                    <button
+                                        className="search-btn"
+                                        onClick={handleAddressSearch}
+                                        disabled={searching || !searchQuery.trim()}
+                                    >
+                                        {searching ? '...' : 'Tìm'}
+                                    </button>
+                                </div>
+
+                                {/* Search Results Dropdown */}
+                                {searchResults.length > 0 && (
+                                    <div className="search-results">
+                                        {searchResults.map((result, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="search-result-item"
+                                                onClick={() => selectGeoResult(result)}
+                                            >
+                                                <span className="result-icon"></span>
+                                                <span className="result-name">{result.display_name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="divider">
+                                <span>hoặc nhập thủ công</span>
+                            </div>
+
                             <div className="form-group">
                                 <label>Tên địa điểm *</label>
                                 <input
@@ -574,14 +676,13 @@ const TripSummary = () => {
                                     />
                                 </div>
                             </div>
-                            <p className="form-hint">💡 Bạn có thể tìm tọa độ trên Google Maps</p>
 
                             <button
                                 className="save-btn"
                                 onClick={saveManualLocation}
                                 disabled={!locationInput.name.trim()}
                             >
-                                💾 Lưu vị trí
+                                Lưu vị trí
                             </button>
                         </div>
                     </div>

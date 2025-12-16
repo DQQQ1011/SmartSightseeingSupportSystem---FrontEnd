@@ -404,122 +404,172 @@
     border-radius: 16px;
 }
 
-/* Photo Markers */
+/* ===== PHOTO MARKERS ===== */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
 .photo-marker {
     width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid #3b82f6;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    height: 60px;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 .photo-marker:hover {
-    transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    z-index: 10;
+    transform: scale(1.1);
 }
 
-.photo-marker img {
-    width: 100%;
-    height: 100%;
+/* Photo frame */
+.photo-marker .marker-photo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     object-fit: cover;
-}
-
-.photo-marker.start {
-    border-color: #10b981;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.photo-marker.end {
-    border-color: #ef4444;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-}
-
-.marker-number {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: #3b82f6;
+    border: 3px solid var(--marker-color, #3b82f6);
+    box-shadow: 0 4px 12px var(--marker-shadow, rgba(59, 130, 246, 0.5));
     background: white;
 }
 
-.photo-marker.start .marker-number {
-    color: #10b981;
+/* Fallback number when no photo */
+.photo-marker .marker-num {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--marker-color, #3b82f6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px var(--marker-shadow, rgba(59, 130, 246, 0.5));
 }
 
-.photo-marker.end .marker-number {
-    color: #ef4444;
-}
-
+/* Badge number */
 .marker-badge {
     position: absolute;
     top: -5px;
-    right: -5px;
-    width: 22px;
-    height: 22px;
-    background: #3b82f6;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: var(--marker-color, #3b82f6);
     color: white;
     border-radius: 50%;
-    font-size: 0.75rem;
-    font-weight: bold;
+    font-size: 0.7rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid white;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.photo-marker.start .marker-badge {
-    background: #10b981;
+/* Pointer arrow */
+.marker-pointer {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid var(--marker-color, #3b82f6);
+    margin-top: -2px;
 }
 
-.photo-marker.end .marker-badge {
-    background: #ef4444;
+/* ===== POPUP STYLES ===== */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+    padding: 0 !important;
+    overflow: hidden;
 }
 
-/* Popup */
-.marker-popup {
-    min-width: 200px;
-    text-align: center;
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 100% !important;
 }
 
-.marker-popup img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
+.popup-content {
+    padding: 1rem;
+}
+
+.popup-header {
     margin-bottom: 0.5rem;
 }
 
-.marker-popup h4 {
-    margin: 0 0 0.25rem;
+.popup-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.popup-badge.start {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.popup-badge.end {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.popup-badge.middle {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.popup-title {
+    margin: 0.5rem 0;
     font-size: 1rem;
+    font-weight: 600;
     color: #1f2937;
 }
 
-.popup-index {
-    color: #6b7280;
+.popup-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin: 0.75rem 0;
+}
+
+.popup-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.popup-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.popup-thumb:hover img {
+    transform: scale(1.1);
+}
+
+.popup-more {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #3b82f6;
+}
+
+.popup-info {
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
     font-size: 0.85rem;
-}
-
-.mapboxgl-popup-content {
-    padding: 0.75rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.mapboxgl-popup-close-button {
-    font-size: 1.2rem;
-    padding: 0.5rem;
     color: #6b7280;
 }
 
@@ -983,4 +1033,109 @@
     .form-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* ===== GEOCODING SEARCH UI ===== */
+.search-group {
+    position: relative;
+}
+
+.search-input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input-row input {
+    flex: 1;
+}
+
+.search-input-row .search-btn {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.search-input-row .search-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.search-input-row .search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Search Results Dropdown */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.search-result-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: var(--accent-soft);
+}
+
+.search-result-item .result-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.search-result-item .result-name {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }

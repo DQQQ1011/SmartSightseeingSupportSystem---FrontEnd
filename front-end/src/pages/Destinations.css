@@ -51,7 +51,7 @@
 }
 
 .search-section h3::before {
-    content: '🔍';
+    content: '';
 }
 
 .search-form {
@@ -119,7 +119,7 @@
 }
 
 .sidebar-header h3::before {
-    content: '⚙️';
+    content: '';
 }
 
 .clear-btn {

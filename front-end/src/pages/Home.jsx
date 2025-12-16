@@ -31,17 +31,17 @@ const Home = () => {
                 <div className="container">
                     <div className="features-grid">
                         <Link to="/recommendations" className="feature-card">
-                            <div className="feature-icon">🧠</div>
+                            <div className="feature-icon"></div>
                             <h3>Gợi ý thông minh</h3>
                             <p>Mô tả sở thích, AI tìm địa điểm phù hợp nhất</p>
                         </Link>
                         <Link to="/visual-search" className="feature-card">
-                            <div className="feature-icon">📷</div>
+                            <div className="feature-icon"></div>
                             <h3>Nhận diện hình ảnh</h3>
                             <p>Upload ảnh, AI nhận diện địa điểm ngay lập tức</p>
                         </Link>
                         <Link to="/destinations" className="feature-card">
-                            <div className="feature-icon">🗺️</div>
+                            <div className="feature-icon"></div>
                             <h3>Bộ lọc chi tiết</h3>
                             <p>Ngân sách, thời gian, mùa, người đi cùng</p>
                         </Link>
