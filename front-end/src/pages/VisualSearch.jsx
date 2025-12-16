@@ -116,7 +116,7 @@ const VisualSearch = () => {
                         onDrop={handleDrop}
                         onDragOver={(e) => e.preventDefault()}
                     >
-                        <div className="upload-icon">📷</div>
+                        <div className="upload-icon"></div>
                         <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
                         <span className="upload-hint">Hỗ trợ: JPG, PNG, WebP</span>
                         <input
@@ -180,7 +180,7 @@ const VisualSearch = () => {
                                         <span className="confidence-value">
                                             {(result.similarity_score * 100).toFixed(1)}%
                                         </span>
-                                        <span className="confidence-badge">✓ Tìm thấy</span>
+                                        <span className="confidence-badge">Tìm thấy</span>
                                     </div>
 
                                     {/* Landmark Info */}
@@ -196,7 +196,7 @@ const VisualSearch = () => {
                                         )}
                                         <h2>{result.landmark_info?.name || 'Địa điểm'}</h2>
                                         <p className="result-location-modal">
-                                            📍 {result.landmark_info?.location_province}
+                                            {result.landmark_info?.location_province}
                                         </p>
                                         {result.landmark_info?.specific_address && (
                                             <p className="result-address-modal">

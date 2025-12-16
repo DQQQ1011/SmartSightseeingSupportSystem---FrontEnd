@@ -63,7 +63,6 @@ const Navbar = () => {
             <nav className="navbar">
                 <div className="container navbar-inner">
                     <Link to="/" className="navbar-brand">
-                        <span className="brand-icon">✦</span>
                         <span>Smart Sightseeing</span>
                     </Link>
 
@@ -118,28 +117,28 @@ const Navbar = () => {
                                         </div>
                                         <div className="dropdown-divider"></div>
                                         <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            👤 Trang cá nhân
+                                            Trang cá nhân
                                         </Link>
                                         <Link to="/favorites" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            ❤️ Yêu thích
+                                            Yêu thích
                                         </Link>
                                         <div className="dropdown-divider"></div>
                                         <span className="dropdown-label">Album & Du lịch</span>
                                         <Link to="/album-creator" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            📁 Tạo Album
+                                            Tạo Album
                                         </Link>
                                         <Link to="/my-albums" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            🖼️ Album của tôi
+                                            Album của tôi
                                         </Link>
                                         <Link to="/trip-summary" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            🗺️ Tổng kết chuyến đi
+                                            Tổng kết chuyến đi
                                         </Link>
                                         <Link to="/detection-history" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                                            📸 Lịch sử nhận diện
+                                            Lịch sử nhận diện
                                         </Link>
                                         <div className="dropdown-divider"></div>
                                         <button className="dropdown-item logout" onClick={handleLogout}>
-                                            🚪 Đăng xuất
+                                            Đăng xuất
                                         </button>
                                     </div>
                                 )}
@@ -174,19 +173,19 @@ const Navbar = () => {
                         <Link to="/recommendations" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Gợi ý AI</Link>
                         <Link to="/visual-search" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Tìm bằng ảnh</Link>
                         <button className="mobile-link" onClick={() => { toggleTheme(); }}>
-                            {isDark ? '☀️ Chế độ sáng' : '🌙 Chế độ tối'}
+                            {isDark ? 'Chế độ sáng' : 'Chế độ tối'}
                         </button>
                         {isAuthenticated ? (
                             <>
-                                <Link to="/profile" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>👤 Trang cá nhân</Link>
-                                <Link to="/favorites" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>❤️ Yêu thích</Link>
+                                <Link to="/profile" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Trang cá nhân</Link>
+                                <Link to="/favorites" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Yêu thích</Link>
                                 <div className="mobile-divider"></div>
-                                <Link to="/album-creator" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>📁 Tạo Album</Link>
-                                <Link to="/my-albums" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>🖼️ Album của tôi</Link>
-                                <Link to="/trip-summary" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>🗺️ Tổng kết chuyến đi</Link>
-                                <Link to="/detection-history" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>📸 Lịch sử nhận diện</Link>
+                                <Link to="/album-creator" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Tạo Album</Link>
+                                <Link to="/my-albums" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Album của tôi</Link>
+                                <Link to="/trip-summary" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Tổng kết chuyến đi</Link>
+                                <Link to="/detection-history" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Lịch sử nhận diện</Link>
                                 <div className="mobile-divider"></div>
-                                <button className="mobile-link logout" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>🚪 Đăng xuất</button>
+                                <button className="mobile-link logout" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>Đăng xuất</button>
                             </>
                         ) : (
                             <Link to="/login" className="mobile-link accent" onClick={() => setMobileMenuOpen(false)}>Đăng nhập</Link>

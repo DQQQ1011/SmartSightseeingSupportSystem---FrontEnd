@@ -192,10 +192,10 @@ const DestinationDetail = () => {
                                 className={`favorite-btn ${isFavorited ? 'active' : ''}`}
                                 onClick={toggleFavorite}
                             >
-                                {isFavorited ? '❤️' : '🤍'}
+                                {isFavorited ? '♥' : '♡'}
                             </button>
                         </div>
-                        <p className="location">📍 {destination.location_province}</p>
+                        <p className="location">{destination.location_province}</p>
                         {cleanedAddress && (
                             <p className="address">{cleanedAddress}</p>
                         )}
@@ -222,16 +222,16 @@ const DestinationDetail = () => {
                                 <h2>Thông tin</h2>
                                 <div className="tags">
                                     {destination.budget_range && (
-                                        <span className="tag">💰 {capitalize(destination.budget_range)}</span>
+                                        <span className="tag">{capitalize(destination.budget_range)}</span>
                                     )}
                                     {destination.available_time?.map((t, i) => (
-                                        <span key={i} className="tag">⏱️ {capitalize(t)}</span>
+                                        <span key={i} className="tag">{capitalize(t)}</span>
                                     ))}
                                     {destination.season_tag?.map((s, i) => (
-                                        <span key={i} className="tag">🍂 {capitalize(s)}</span>
+                                        <span key={i} className="tag">{capitalize(s)}</span>
                                     ))}
                                     {destination.companion_tag?.map((c, i) => (
-                                        <span key={i} className="tag">👥 {capitalize(c)}</span>
+                                        <span key={i} className="tag">{capitalize(c)}</span>
                                     ))}
                                 </div>
                             </div>

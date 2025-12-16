@@ -1,16 +1,73 @@
-# React + Vite
+# Smart Sightseeing - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend cho hệ thống Smart Sightseeing, xây dựng bằng React + Vite.
 
-Currently, two official plugins are available:
+## Yêu cầu
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js v18.x+
+- npm v9.x+
 
-## React Compiler
+## Cài đặt & Chạy Local
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# 1. Cài dependencies
+npm install
 
-## Expanding the ESLint configuration
+# 2. Copy file môi trường
+cp .env.example .env
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 3. Chạy dev server
+npm run dev
+```
+
+Frontend chạy tại: **http://localhost:5173**
+
+## Cấu hình .env
+
+```env
+# Để trống cho local (dùng Vite proxy)
+VITE_BEFORE_API_URL=
+VITE_DURING_API_URL=
+VITE_AFTER_API_URL=
+VITE_AUTH_API_URL=
+
+# Google OAuth (tùy chọn)
+VITE_GOOGLE_CLIENT_ID=your_client_id
+```
+
+## Backend Ports (Local)
+
+| Service | Port | Mô tả |
+|---------|------|-------|
+| Auth | 8000 | Đăng nhập, OAuth |
+| Before | 8001 | Destinations, Search, AI |
+| During | 8002 | Visual Search |
+| After | 8003 | Albums, Trip Summary |
+
+## Scripts
+
+| Lệnh | Mô tả |
+|------|-------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview build |
+| `npm run lint` | Check lỗi code |
+
+## Cấu trúc
+
+```
+src/
+├── components/   # UI components
+├── context/      # React Context
+├── pages/        # Page components
+├── services/     # API calls
+└── App.jsx       # Main app
+```
+
+## Tech Stack
+
+- React 19
+- Vite 7
+- React Router DOM
+- Axios
+- Leaflet (Maps)

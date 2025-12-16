@@ -112,7 +112,7 @@ const DetectionHistory = () => {
     return (
         <div className="detection-history">
             <div className="page-header">
-                <h1>📸 Lịch sử nhận diện</h1>
+                <h1>Lịch sử nhận diện</h1>
                 <div className="header-actions">
                     {history.length > 0 && (
                         <button
@@ -122,7 +122,7 @@ const DetectionHistory = () => {
                             }}
                             className={`select-btn ${selectMode ? 'active' : ''}`}
                         >
-                            {selectMode ? '✕ Hủy' : '☐ Chọn'}
+                            {selectMode ? 'Hủy' : 'Chọn'}
                         </button>
                     )}
                     <button onClick={() => navigate('/visual-search')} className="search-btn">
@@ -149,7 +149,7 @@ const DetectionHistory = () => {
                             }}
                             className="select-all-btn"
                         >
-                            {selected.length === history.length ? '☐ Bỏ chọn tất cả' : '☑ Chọn tất cả'}
+                            {selected.length === history.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
                         </button>
                     </div>
                     <button
@@ -157,18 +157,18 @@ const DetectionHistory = () => {
                         disabled={deleting || selected.length === 0}
                         className="delete-btn"
                     >
-                        🗑️ {deleting ? 'Đang xóa...' : `Xóa ${selected.length > 0 ? `(${selected.length})` : ''}`}
+                        {deleting ? 'Đang xóa...' : `Xóa ${selected.length > 0 ? `(${selected.length})` : ''}`}
                     </button>
                 </div>
             )}
 
             {history.length === 0 ? (
                 <div className="empty-state">
-                    <span className="empty-icon">🔍</span>
+                    <span className="empty-icon"></span>
                     <h3>Chưa có lịch sử nhận diện</h3>
                     <p>Hãy thử tính năng nhận diện địa điểm bằng hình ảnh!</p>
                     <button onClick={() => navigate('/visual-search')} className="search-btn large">
-                        📷 Nhận diện ngay
+                        Nhận diện ngay
                     </button>
                 </div>
             ) : (

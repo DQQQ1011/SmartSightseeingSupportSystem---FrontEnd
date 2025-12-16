@@ -71,7 +71,7 @@ export const getMyAlbums = async () => {
 /**
  * Create trip summary from album data
  * @param {Object} albumData - Album data for summary
- * @param {Array} manualLocations - Optional manual locations
+ * @param {Array} manualLocations - Optional manual locations (with album_id, lat, lon, name)
  * @returns {Promise} Trip summary response
  */
 export const createTripSummary = async (albumData, manualLocations = []) => {
@@ -84,12 +84,31 @@ export const createTripSummary = async (albumData, manualLocations = []) => {
 
 /**
  * Get summary history
- * @param {string} userId - User ID
  * @returns {Promise} Array of past summaries
  */
-export const getSummaryHistory = async (userId) => {
-    const response = await afterApi.get('/summary/history', {
-        params: { user_id: userId },
+export const getSummaryHistory = async () => {
+    const response = await afterApi.get('/summary/history');
+    return response.data;
+};
+
+/**
+ * Delete a trip summary
+ * @param {string} summaryId - Summary ID to delete
+ * @returns {Promise} Success message
+ */
+export const deleteTripSummary = async (summaryId) => {
+    const response = await afterApi.delete(`/summary/${summaryId}`);
+    return response.data;
+};
+
+/**
+ * Geocode an address using OpenStreetMap via backend
+ * @param {string} address - Address to search
+ * @returns {Promise} Array of geocoding results [{lat, lon, display_name}]
+ */
+export const geocodeAddress = async (address) => {
+    const response = await afterApi.post('/geocode/osm', {
+        address: address,
     });
     return response.data;
 };
