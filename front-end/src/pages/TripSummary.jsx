@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMyAlbums, createTripSummary, getSummaryHistory, geocodeAddress } from '../services/afterService';
+import { getMyAlbums, createTripSummary, getSummaryHistory, geocodeAddress, deleteTripSummary } from '../services/afterService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
@@ -166,6 +166,24 @@ const TripSummary = () => {
         setSearchQuery('');
     };
 
+    // Handle delete summary
+    const handleDeleteSummary = async (e, summaryId) => {
+        e.stopPropagation(); // Prevent card click event
+
+        if (!window.confirm('Bạn có chắc muốn xóa tổng kết này?')) {
+            return;
+        }
+
+        try {
+            await deleteTripSummary(summaryId);
+            // Remove from local state
+            setSummaries(prev => prev.filter(s => s._id !== summaryId));
+        } catch (err) {
+            console.error('Delete error:', err);
+            setError(err.message || 'Không thể xóa tổng kết');
+        }
+    };
+
     const handleGenerate = async () => {
         if (selectedAlbums.length === 0) {
             setError('Vui lòng chọn ít nhất 1 album');
@@ -179,16 +197,22 @@ const TripSummary = () => {
             // Get selected albums data
             const albumData = albums.filter(a => selectedAlbums.includes(a.id));
 
-            const result = await createTripSummary(
-                {
-                    albums: albumData.map(a => ({
-                        album_id: a.id, // Include album_id for backend matching
-                        title: a.title,
-                        photos: a.photos || [],
-                    })),
-                },
-                manualLocations // Manual locations now use album_id
-            );
+            // Debug: log data being sent
+            const requestData = {
+                albums: albumData.map(a => ({
+                    album_id: a.id,
+                    title: a.title,
+                    photos: a.photos || [],
+                })),
+            };
+            console.log('📤 Sending to backend:', JSON.stringify(requestData, null, 2));
+            console.log('📍 Manual locations:', manualLocations);
+
+            const result = await createTripSummary(requestData, manualLocations);
+
+            // Debug: log response
+            console.log('📥 Backend response:', JSON.stringify(result, null, 2));
+            console.log(`📊 Points: ${result.points?.length}, Timeline: ${result.timeline?.length}, Locations: ${result.locations?.length}`);
 
             setCurrentSummary(result);
             setSummaries(prev => [result, ...prev]);
@@ -258,13 +282,22 @@ const TripSummary = () => {
             <div className="tabs">
                 <button
                     className={`tab ${tab === 'create' ? 'active' : ''}`}
-                    onClick={() => setTab('create')}
+                    onClick={() => {
+                        setTab('create');
+                        setCurrentSummary(null);
+                        setStep(1);
+                        setSelectedAlbums([]);
+                        setManualLocations([]);
+                    }}
                 >
                     Tạo mới
                 </button>
                 <button
                     className={`tab ${tab === 'history' ? 'active' : ''}`}
-                    onClick={() => setTab('history')}
+                    onClick={() => {
+                        setTab('history');
+                        setCurrentSummary(null);
+                    }}
                 >
                     Lịch sử ({summaries.length})
                 </button>
@@ -482,47 +515,45 @@ const TripSummary = () => {
 
                                         {/* Photo Markers */}
                                         {currentSummary.points.map((point, index) => {
+                                            // Validate coordinates
+                                            if (!point || !Array.isArray(point) || point.length < 2) {
+                                                return null;
+                                            }
+                                            const lat = point[0];
+                                            const lon = point[1];
+                                            if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
+                                                return null;
+                                            }
+
                                             // Use locations from backend response (already sorted by date)
                                             const location = currentSummary.locations?.[index];
-                                            // Only use cover_url from backend - it's already matched with correct point
-                                            const photoUrl = location?.cover_url || location?.sample_photos?.[0] || null;
+                                            const photoUrl = location?.cover_url || null;
                                             const isStart = index === 0;
                                             const isEnd = index === currentSummary.points.length - 1;
                                             const icon = createPhotoIcon(photoUrl, index, isStart, isEnd);
 
+                                            // Z-index: start and end should be on top, others based on index
+                                            const zIndex = isStart ? 1000 : isEnd ? 999 : 500 + index;
+
                                             return (
                                                 <Marker
                                                     key={index}
-                                                    position={[point[0], point[1]]}
+                                                    position={[lat, lon]}
                                                     icon={icon}
+                                                    zIndexOffset={zIndex}
                                                 >
-                                                    <Popup className="album-popup" maxWidth={300} minWidth={250}>
-                                                        <div className="popup-content">
-                                                            <div className="popup-header">
-                                                                <span className={`popup-badge ${isStart ? 'start' : isEnd ? 'end' : 'middle'}`}>
-                                                                    {isStart ? 'Bắt đầu' : isEnd ? 'Kết thúc' : `Điểm ${index + 1}`}
-                                                                </span>
+                                                    <Popup className="album-popup" maxWidth={280} minWidth={200}>
+                                                        <div className="popup-content popup-simple">
+                                                            {/* Single cover photo with timeline badge */}
+                                                            <div className="popup-cover">
+                                                                {photoUrl ? (
+                                                                    <img src={photoUrl} alt={location?.title || `Điểm ${index + 1}`} />
+                                                                ) : (
+                                                                    <div className="popup-no-photo">Không có ảnh</div>
+                                                                )}
+                                                                <span className="popup-timeline-badge">{index + 1}</span>
                                                             </div>
-                                                            <h4 className="popup-title">{location?.title || currentSummary.timeline[index] || `Điểm ${index + 1}`}</h4>
-
-                                                            {location?.sample_photos && location.sample_photos.length > 0 && (
-                                                                <div className="popup-gallery">
-                                                                    {location.sample_photos.slice(0, 4).map((url, pIdx) => (
-                                                                        <div key={pIdx} className="popup-thumb">
-                                                                            <img
-                                                                                src={url}
-                                                                                alt={`Photo ${pIdx + 1}`}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                    {location.photo_count > 4 && (
-                                                                        <div className="popup-more">
-                                                                            +{location.photo_count - 4}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
+                                                            <h4 className="popup-title">{location?.title || currentSummary.timeline?.[index] || `Điểm ${index + 1}`}</h4>
                                                             <div className="popup-info">
                                                                 <span>{location?.photo_count || 0} ảnh</span>
                                                             </div>
@@ -682,19 +713,30 @@ const TripSummary = () => {
                     ) : (
                         <div className="summaries-list">
                             {summaries.map((summary, index) => (
-                                <div key={index} className="summary-card" onClick={() => {
-                                    setCurrentSummary(summary);
-                                    setStep(3);
-                                    setTab('create');
-                                }}>
-                                    <h4>{summary.trip_title}</h4>
-                                    <div className="summary-meta">
-                                        <span>{summary.total_locations} địa điểm</span>
-                                        <span>•</span>
-                                        <span>{summary.total_distance_km?.toFixed(1)} km</span>
-                                        <span>•</span>
-                                        <span>{summary.start_date} → {summary.end_date}</span>
+                                <div key={summary._id || index} className="summary-card">
+                                    <div className="summary-card-content" onClick={() => {
+                                        setCurrentSummary(summary);
+                                        setStep(3);
+                                        setTab('create');
+                                    }}>
+                                        <h4>{summary.trip_title}</h4>
+                                        <div className="summary-meta">
+                                            <span>{summary.total_locations} địa điểm</span>
+                                            <span>•</span>
+                                            <span>{summary.total_distance_km?.toFixed(1)} km</span>
+                                            <span>•</span>
+                                            <span>{summary.start_date} → {summary.end_date}</span>
+                                        </div>
                                     </div>
+                                    {summary._id && (
+                                        <button
+                                            className="delete-btn"
+                                            onClick={(e) => handleDeleteSummary(e, summary._id)}
+                                            title="Xóa tổng kết này"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
